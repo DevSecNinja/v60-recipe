@@ -1,9 +1,11 @@
 // V60 Recipe Calculator - Service Worker
-const CACHE_NAME = 'v60-recipe-v1';
+const CACHE_NAME = 'v60-recipe-v1.0.0';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
+  './icons/favicon.ico',
+  './icons/apple-touch-icon.png',
   './icons/icon-192.png',
   './icons/icon-512.png'
 ];

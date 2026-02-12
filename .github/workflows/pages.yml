@@ -3,11 +3,8 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
-    paths:
-      - 'index.html'
-      - 'tests/**'
-      - 'package.json'
-      - 'package-lock.json'
+    paths-ignore:
+      - '**.md'
   workflow_dispatch:
 
 permissions:

@@ -2,13 +2,23 @@
 
 ## Overview
 
-The V60 Recipe Calculator is a single-file static web application (`index.html`) with zero external dependencies beyond a Google Fonts CDN link. It is designed to be opened on a phone while brewing coffee and deployed via GitHub Pages with no build step.
+The V60 Recipe Calculator is a single-file static web application (`index.html`) with zero external dependencies beyond a Google Fonts CDN link. It is designed to be opened on a phone while brewing coffee and deployed via GitHub Pages with no build step. It is installable as a Progressive Web App (PWA) for offline use on iOS, Android, and desktop.
 
 ## File Structure
 
 ```
 .
 ├── index.html                      # Entire application (HTML + inline CSS + inline JS)
+├── manifest.json                   # PWA web app manifest
+├── sw.js                           # Service worker for offline caching
+├── icons/                          # PWA & Apple touch icons
+│   ├── icon.svg                    # Source SVG icon
+│   ├── icon-maskable.svg           # Source SVG maskable icon
+│   ├── icon-192.png                # 192×192 app icon
+│   ├── icon-512.png                # 512×512 app icon
+│   ├── icon-maskable-192.png       # 192×192 maskable icon
+│   ├── icon-maskable-512.png       # 512×512 maskable icon
+│   └── apple-touch-icon.png        # 180×180 Apple touch icon
 ├── .github/workflows/pages.yml     # GitHub Pages deployment workflow
 ├── README.md                       # Project documentation
 ├── ARCHITECTURE.md                 # This file
@@ -109,6 +119,39 @@ The GitHub Actions workflow (`.github/workflows/pages.yml`) deploys on every pus
 3. Deploy to GitHub Pages
 
 No build command is needed — the static files are served as-is.
+
+## Progressive Web App (PWA)
+
+The app is installable as a PWA for offline use, particularly useful for brewing coffee without network access.
+
+### Components
+
+| File | Purpose |
+|------|---------|
+| `manifest.json` | Declares app name, icons, theme color, display mode (`standalone`), and start URL |
+| `sw.js` | Service worker that caches all app assets and Google Fonts for offline use |
+| `icons/` | PNG icons at 192×192 and 512×512, plus maskable variants and an Apple touch icon |
+
+### Caching Strategy
+
+The service worker uses a **cache-first** strategy:
+
+1. **Install** — Pre-caches `index.html`, `manifest.json`, and icons.
+2. **Fetch** — Serves cached assets first; falls back to network and caches new responses (including Google Fonts CSS and font files).
+3. **Activate** — Cleans up old cache versions when a new service worker is deployed.
+
+### iOS (iPhone/iPad) Support
+
+Apple-specific meta tags ensure proper behavior when added to the home screen:
+
+- `apple-mobile-web-app-capable` — launches in standalone mode (no Safari chrome).
+- `apple-mobile-web-app-status-bar-style` — dark translucent status bar matching the espresso theme.
+- `apple-mobile-web-app-title` — "V60 Recipe" as the home screen label.
+- `apple-touch-icon` — 180×180 icon used on the home screen.
+
+### Cache Versioning
+
+The cache name includes a version string (`v60-recipe-v1`). To bust the cache after a code change, increment the version in `sw.js`. The activate handler automatically deletes old caches.
 
 ## Design Trade-offs
 
