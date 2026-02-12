@@ -164,28 +164,6 @@ describe('V60 Recipe Calculator — Core Logic', () => {
       slider.dispatchEvent(new dom.window.Event('input'));
       expect(ratioDisplay.textContent).toBe('1:14.5');
     });
-
-    test('snaps to default when within ±0.2', () => {
-      const slider = doc.getElementById('ratioSlider');
-      const ratioDisplay = doc.getElementById('ratioDisplay');
-
-      slider.value = '16.8';
-      slider.dispatchEvent(new dom.window.Event('input'));
-      expect(ratioDisplay.textContent).toBe('1:16.7');
-
-      slider.value = '16.6';
-      slider.dispatchEvent(new dom.window.Event('input'));
-      expect(ratioDisplay.textContent).toBe('1:16.7');
-    });
-
-    test('does not snap when outside ±0.2 range', () => {
-      const slider = doc.getElementById('ratioSlider');
-      const ratioDisplay = doc.getElementById('ratioDisplay');
-
-      slider.value = '16.0';
-      slider.dispatchEvent(new dom.window.Event('input'));
-      expect(ratioDisplay.textContent).toBe('1:16.0');
-    });
   });
 
   describe('Brew steps — initial state', () => {

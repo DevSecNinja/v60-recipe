@@ -37,7 +37,6 @@ A 4-step guided brew timer driven by a finite state machine (see below). Steps d
 
 ### 3. Ratio Slider
 An `<input type="range">` (1:14 to 1:18, step 0.1) that recalculates the entire recipe table on every `input` event. Features:
-- **Sticky default** — snaps to 1:16.7 when the thumb is within ±0.2 of the default value, making it easy to return to the standard ratio.
 - **Reset button** — appears only when the slider is away from the default.
 
 ### 4. Recipe Table
@@ -119,6 +118,5 @@ No build command is needed — the static files are served as-is.
 | Inline CSS/JS over separate files | One fewer HTTP request; easier to maintain as a unit |
 | `setInterval` at 200ms over `requestAnimationFrame` | Sufficient precision for second-resolution countdowns; simpler code |
 | 10g water increments | Captures the classic 250g recipe (missed with 20g increments) while keeping the table scannable |
-| Sticky slider snap (±0.2) | Prevents frustration of trying to hit exactly 16.7 on a touch slider |
 | Sequential step enforcement | Prevents user error during brewing — can't accidentally start pour 2 before pour 1 |
 | Auto-complete on countdown zero | Hands-free brewing — user doesn't need to tap when timer expires |

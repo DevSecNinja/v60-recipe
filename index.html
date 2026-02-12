@@ -717,14 +717,9 @@
     // Step durations in seconds: Bloom 45s, Pour 1 30s, Pour 2 30s, Drain 105s
     const STEP_DURATIONS = [45, 30, 30, 105];
 
-    // --- Slider snap to default ---
+    // --- Slider input handler ---
     function handleSliderInput() {
-      let val = parseFloat(slider.value);
-      // Sticky: snap to default if within ±0.2
-      if (Math.abs(val - DEFAULT_RATIO) < 0.1) {
-        val = DEFAULT_RATIO;
-        slider.value = DEFAULT_RATIO;
-      }
+      const val = parseFloat(slider.value);
       ratioDisplay.textContent = '1:' + val.toFixed(1);
       btnResetRatio.classList.toggle('hidden', val === DEFAULT_RATIO);
       generateTable(val);
