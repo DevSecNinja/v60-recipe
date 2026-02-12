@@ -24,9 +24,14 @@
       --cream-light: #FAF7F5;
       --highlight-bg: #FFF3E0;
       --highlight-border: #FF9800;
+      --selected-bg: #E3F2FD;
+      --selected-border: #1976D2;
       --text-primary: #3E2723;
       --text-secondary: #5D4037;
       --white: #FFFFFF;
+      --green-light: #E8F5E9;
+      --green-border: #66BB6A;
+      --green-text: #2E7D32;
       --shadow: 0 2px 8px rgba(62, 39, 35, 0.12);
       --shadow-lg: 0 4px 16px rgba(62, 39, 35, 0.16);
       --radius: 12px;
@@ -90,11 +95,47 @@
       margin-bottom: 1.5rem;
     }
 
-    .brew-steps h2 {
+    .brew-steps-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .brew-steps-header h2 {
       font-size: 1.1rem;
       font-weight: 600;
-      margin-bottom: 0.75rem;
       color: var(--espresso);
+    }
+
+    .brew-selected-recipe {
+      font-size: 0.8rem;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .brew-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-reset-brew {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      border: 1.5px solid var(--accent);
+      background: var(--white);
+      color: var(--accent);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-reset-brew:hover {
+      background: var(--cream);
     }
 
     .steps-grid {
@@ -108,6 +149,50 @@
       border-radius: var(--radius-sm);
       padding: 0.75rem 1rem;
       text-align: center;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+      user-select: none;
+      position: relative;
+    }
+
+    .step.available {
+      border-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .step.available:hover {
+      background: #F5EFEB;
+      box-shadow: 0 2px 8px rgba(141, 110, 99, 0.2);
+    }
+
+    .step.locked {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step.running {
+      border-color: var(--highlight-border);
+      background: var(--highlight-bg);
+      animation: pulse-border 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.3); }
+      50% { box-shadow: 0 0 0 6px rgba(255, 152, 0, 0); }
+    }
+
+    .step.completed {
+      background: var(--green-light);
+      border-color: var(--green-border);
+    }
+
+    .step.completed .step-label {
+      color: var(--green-text);
+    }
+
+    .step.completed .step-timer {
+      color: var(--green-text);
     }
 
     .step-label {
@@ -126,6 +211,39 @@
 
     .step-detail strong {
       color: var(--espresso);
+    }
+
+    .step-timer {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--espresso);
+      margin-top: 0.4rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .step-hint {
+      font-size: 0.65rem;
+      color: var(--light-accent);
+      margin-top: 0.3rem;
+      font-weight: 500;
+    }
+
+    .step.completed .step-hint {
+      color: var(--green-text);
+      opacity: 0.7;
+    }
+
+    .step.running .step-hint {
+      color: var(--highlight-border);
+    }
+
+    /* No recipe selected prompt */
+    .no-recipe-notice {
+      text-align: center;
+      padding: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--light-accent);
+      font-style: italic;
     }
 
     /* Slider Section */
@@ -157,8 +275,13 @@
       white-space: nowrap;
     }
 
-    .slider-wrapper input[type="range"] {
+    .slider-track-container {
       flex: 1;
+      position: relative;
+    }
+
+    .slider-track-container input[type="range"] {
+      width: 100%;
       -webkit-appearance: none;
       appearance: none;
       height: 6px;
@@ -168,7 +291,7 @@
       cursor: pointer;
     }
 
-    .slider-wrapper input[type="range"]::-webkit-slider-thumb {
+    .slider-track-container input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
       width: 22px;
@@ -180,11 +303,11 @@
       transition: background 0.15s;
     }
 
-    .slider-wrapper input[type="range"]::-webkit-slider-thumb:hover {
+    .slider-track-container input[type="range"]::-webkit-slider-thumb:hover {
       background: var(--medium-brown);
     }
 
-    .slider-wrapper input[type="range"]::-moz-range-thumb {
+    .slider-track-container input[type="range"]::-moz-range-thumb {
       width: 22px;
       height: 22px;
       border-radius: 50%;
@@ -195,8 +318,30 @@
       transition: background 0.15s;
     }
 
-    .slider-wrapper input[type="range"]::-moz-range-thumb:hover {
+    .slider-track-container input[type="range"]::-moz-range-thumb:hover {
       background: var(--medium-brown);
+    }
+
+    .default-marker {
+      position: absolute;
+      top: -6px;
+      width: 2px;
+      height: 18px;
+      background: var(--highlight-border);
+      border-radius: 1px;
+      pointer-events: none;
+      /* positioned via JS */
+    }
+
+    .default-marker-label {
+      position: absolute;
+      top: -22px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: var(--highlight-border);
+      white-space: nowrap;
+      transform: translateX(-50%);
+      pointer-events: none;
     }
 
     .ratio-value {
@@ -208,17 +353,47 @@
       font-variant-numeric: tabular-nums;
     }
 
+    .slider-bottom-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.35rem;
+      padding: 0 0.1rem;
+    }
+
     .slider-labels {
       display: flex;
       justify-content: space-between;
-      margin-top: 0.25rem;
-      padding: 0 0.1rem;
+      flex: 1;
     }
 
     .slider-labels span {
       font-size: 0.7rem;
       color: var(--light-accent);
       font-weight: 500;
+    }
+
+    .btn-reset-ratio {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 5px;
+      border: 1.5px solid var(--highlight-border);
+      background: var(--highlight-bg);
+      color: var(--highlight-border);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      margin-left: 0.75rem;
+    }
+
+    .btn-reset-ratio:hover {
+      background: #FFE0B2;
+    }
+
+    .btn-reset-ratio.hidden {
+      visibility: hidden;
     }
 
     /* Table Section */
@@ -233,8 +408,14 @@
     .table-section h2 {
       font-size: 1.1rem;
       font-weight: 600;
-      padding: 1.25rem 1.5rem 1rem;
+      padding: 1.25rem 1.5rem 0.25rem;
       color: var(--espresso);
+    }
+
+    .table-hint {
+      padding: 0 1.5rem 0.75rem;
+      font-size: 0.75rem;
+      color: var(--light-accent);
     }
 
     .table-wrapper {
@@ -284,6 +465,11 @@
       border-bottom: none;
     }
 
+    tbody tr {
+      cursor: pointer;
+      transition: background-color 0.1s;
+    }
+
     tbody tr:hover {
       background-color: var(--cream-light);
     }
@@ -310,6 +496,38 @@
       width: 3px;
       background: var(--highlight-border);
       border-radius: 0 2px 2px 0;
+    }
+
+    tbody tr.selected {
+      background-color: var(--selected-bg);
+      font-weight: 600;
+    }
+
+    tbody tr.selected td {
+      border-bottom-color: #BBDEFB;
+    }
+
+    tbody tr.selected td:first-child {
+      position: relative;
+    }
+
+    tbody tr.selected td:first-child::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--selected-border);
+      border-radius: 0 2px 2px 0;
+    }
+
+    tbody tr.highlight.selected {
+      background: linear-gradient(90deg, var(--selected-bg) 0%, var(--highlight-bg) 100%);
+    }
+
+    tbody tr.highlight.selected td:first-child::before {
+      background: linear-gradient(180deg, var(--selected-border), var(--highlight-border));
     }
 
     /* Footer */
@@ -371,23 +589,42 @@
 
   <main>
     <section class="brew-steps">
-      <h2>Brew Steps</h2>
-      <div class="steps-grid">
-        <div class="step">
+      <div class="brew-steps-header">
+        <div>
+          <h2>Brew Steps</h2>
+          <div class="brew-selected-recipe" id="brewRecipeLabel">Select a recipe from the table below</div>
+        </div>
+        <div class="brew-actions">
+          <button class="btn-reset-brew" id="btnResetBrew" title="Reset all brew steps">Reset</button>
+        </div>
+      </div>
+      <div id="noRecipeNotice" class="no-recipe-notice">
+        👇 Tap a row in the recipe table to load a brew
+      </div>
+      <div class="steps-grid" id="stepsGrid" style="display:none;">
+        <div class="step locked" id="step0" data-step="0">
           <div class="step-label">1 — Bloom</div>
-          <div class="step-detail">Pour <strong>2× coffee</strong> in water<br>Wait 45s, swirl</div>
+          <div class="step-detail" id="step0Detail">Pour <strong>--g</strong> water<br>Wait 45s, swirl</div>
+          <div class="step-timer" id="step0Timer">0:00</div>
+          <div class="step-hint" id="step0Hint"></div>
         </div>
-        <div class="step">
+        <div class="step locked" id="step1" data-step="1">
           <div class="step-label">2 — Pour 1</div>
-          <div class="step-detail">Up to <strong>60%</strong> of total<br>by <strong>1:15</strong></div>
+          <div class="step-detail" id="step1Detail">Pour to <strong>--g</strong><br>by <strong>1:15</strong></div>
+          <div class="step-timer" id="step1Timer">0:00</div>
+          <div class="step-hint" id="step1Hint"></div>
         </div>
-        <div class="step">
+        <div class="step locked" id="step2" data-step="2">
           <div class="step-label">3 — Pour 2</div>
-          <div class="step-detail">Up to <strong>100%</strong> of total<br>by <strong>1:45</strong></div>
+          <div class="step-detail" id="step2Detail">Pour to <strong>--g</strong><br>by <strong>1:45</strong></div>
+          <div class="step-timer" id="step2Timer">0:00</div>
+          <div class="step-hint" id="step2Hint"></div>
         </div>
-        <div class="step">
+        <div class="step locked" id="step3" data-step="3">
           <div class="step-label">4 — Finish</div>
-          <div class="step-detail">Swirl &amp; drain<br>Target <strong>~3:30</strong> total</div>
+          <div class="step-detail" id="step3Detail">Swirl &amp; drain<br>Target <strong>~3:30</strong></div>
+          <div class="step-timer" id="step3Timer">0:00</div>
+          <div class="step-hint" id="step3Hint"></div>
         </div>
       </div>
     </section>
@@ -396,17 +633,25 @@
       <h2>Coffee-to-Water Ratio</h2>
       <div class="slider-wrapper">
         <label for="ratioSlider">1 :</label>
-        <input type="range" id="ratioSlider" min="14" max="18" step="0.1" value="16.7">
+        <div class="slider-track-container">
+          <input type="range" id="ratioSlider" min="14" max="18" step="0.1" value="16.7">
+          <div class="default-marker" id="defaultMarker"></div>
+          <div class="default-marker-label" id="defaultMarkerLabel">default</div>
+        </div>
         <span class="ratio-value" id="ratioDisplay">1:16.7</span>
       </div>
-      <div class="slider-labels">
-        <span>1:14 (stronger)</span>
-        <span>1:18 (lighter)</span>
+      <div class="slider-bottom-row">
+        <div class="slider-labels">
+          <span>1:14 (stronger)</span>
+          <span>1:18 (lighter)</span>
+        </div>
+        <button class="btn-reset-ratio hidden" id="btnResetRatio">Reset to 1:16.7</button>
       </div>
     </section>
 
     <section class="table-section">
       <h2>Recipe Reference Table</h2>
+      <p class="table-hint">Tap a row to load it into the brew steps above</p>
       <div class="table-wrapper">
         <table>
           <thead>
@@ -430,20 +675,72 @@
   </footer>
 
   <script>
+    // --- Constants ---
+    const DEFAULT_RATIO = 16.7;
+    const STEP_COUNT = 4;
+
+    // --- DOM refs ---
     const slider = document.getElementById('ratioSlider');
     const ratioDisplay = document.getElementById('ratioDisplay');
     const tableBody = document.getElementById('recipeTableBody');
+    const btnResetRatio = document.getElementById('btnResetRatio');
+    const defaultMarker = document.getElementById('defaultMarker');
+    const defaultMarkerLabel = document.getElementById('defaultMarkerLabel');
+    const stepsGrid = document.getElementById('stepsGrid');
+    const noRecipeNotice = document.getElementById('noRecipeNotice');
+    const brewRecipeLabel = document.getElementById('brewRecipeLabel');
+    const btnResetBrew = document.getElementById('btnResetBrew');
 
+    // --- Brew state ---
+    let selectedRecipe = null; // { water, coffee, bloom, pour1, pour2 }
+    let stepStates = []; // 'locked' | 'available' | 'running' | 'completed'
+    let stepTimers = []; // interval IDs
+    let stepStartTimes = []; // timestamps
+    let stepElapsed = []; // elapsed seconds
+
+    // --- Position default marker on slider track ---
+    function positionDefaultMarker() {
+      const min = parseFloat(slider.min);
+      const max = parseFloat(slider.max);
+      const pct = ((DEFAULT_RATIO - min) / (max - min)) * 100;
+      defaultMarker.style.left = `calc(${pct}% - 1px)`;
+      defaultMarkerLabel.style.left = `${pct}%`;
+    }
+
+    // --- Slider snap to default ---
+    function handleSliderInput() {
+      let val = parseFloat(slider.value);
+      // Sticky: snap to default if within ±0.3
+      if (Math.abs(val - DEFAULT_RATIO) < 0.3) {
+        val = DEFAULT_RATIO;
+        slider.value = DEFAULT_RATIO;
+      }
+      ratioDisplay.textContent = '1:' + val.toFixed(1);
+      btnResetRatio.classList.toggle('hidden', val === DEFAULT_RATIO);
+      generateTable(val);
+    }
+
+    function resetRatio() {
+      slider.value = DEFAULT_RATIO;
+      handleSliderInput();
+    }
+
+    // --- Table generation (10g increments) ---
     function generateTable(ratio) {
       let html = '';
-      for (let water = 100; water <= 500; water += 20) {
+      for (let water = 100; water <= 500; water += 10) {
         const coffee = (water / ratio).toFixed(1);
-        const bloom = (coffee * 2).toFixed(0);
+        const bloom = (parseFloat(coffee) * 2).toFixed(0);
         const pour1 = (water * 0.6).toFixed(0);
         const pour2 = water;
         const isHighlight = water === 250;
+        const isSelected = selectedRecipe && selectedRecipe.water === water;
 
-        html += `<tr class="${isHighlight ? 'highlight' : ''}">
+        let classes = [];
+        if (isHighlight) classes.push('highlight');
+        if (isSelected) classes.push('selected');
+
+        html += `<tr class="${classes.join(' ')}" data-water="${water}" data-coffee="${coffee}" data-bloom="${bloom}" data-pour1="${pour1}" data-pour2="${pour2}">
           <td>${water}g</td>
           <td>${coffee}g</td>
           <td>${bloom}g</td>
@@ -452,18 +749,142 @@
         </tr>`;
       }
       tableBody.innerHTML = html;
+
+      // Attach row click handlers
+      tableBody.querySelectorAll('tr').forEach(row => {
+        row.addEventListener('click', () => selectRecipe(row));
+      });
     }
 
-    function updateRatio() {
-      const ratio = parseFloat(slider.value);
-      ratioDisplay.textContent = '1:' + ratio.toFixed(1);
-      generateTable(ratio);
+    // --- Select a recipe row ---
+    function selectRecipe(row) {
+      const water = parseInt(row.dataset.water);
+      const coffee = row.dataset.coffee;
+      const bloom = row.dataset.bloom;
+      const pour1 = row.dataset.pour1;
+      const pour2 = row.dataset.pour2;
+
+      selectedRecipe = { water, coffee, bloom, pour1, pour2 };
+
+      // Update table highlight
+      tableBody.querySelectorAll('tr.selected').forEach(r => r.classList.remove('selected'));
+      row.classList.add('selected');
+
+      // Show steps grid, hide notice
+      noRecipeNotice.style.display = 'none';
+      stepsGrid.style.display = '';
+
+      // Update recipe label
+      brewRecipeLabel.textContent = `Brewing ${water}g water / ${coffee}g coffee`;
+
+      // Update step details with recipe values
+      document.getElementById('step0Detail').innerHTML = `Pour <strong>${bloom}g</strong> water<br>Wait 45s, swirl`;
+      document.getElementById('step1Detail').innerHTML = `Pour to <strong>${pour1}g</strong> total<br>by <strong>1:15</strong>`;
+      document.getElementById('step2Detail').innerHTML = `Pour to <strong>${pour2}g</strong> total<br>by <strong>1:45</strong>`;
+      document.getElementById('step3Detail').innerHTML = `Swirl &amp; drain<br>Target <strong>~3:30</strong>`;
+
+      // Reset brew state
+      resetBrewState();
     }
 
-    slider.addEventListener('input', updateRatio);
+    // --- Brew step logic ---
+    function resetBrewState() {
+      // Clear all timers
+      for (let i = 0; i < STEP_COUNT; i++) {
+        if (stepTimers[i]) clearInterval(stepTimers[i]);
+      }
+      stepTimers = new Array(STEP_COUNT).fill(null);
+      stepStartTimes = new Array(STEP_COUNT).fill(null);
+      stepElapsed = new Array(STEP_COUNT).fill(0);
+      stepStates = new Array(STEP_COUNT).fill('locked');
 
-    // Initial render
-    updateRatio();
+      // First step is available
+      if (selectedRecipe) {
+        stepStates[0] = 'available';
+      }
+
+      renderSteps();
+    }
+
+    function renderSteps() {
+      for (let i = 0; i < STEP_COUNT; i++) {
+        const el = document.getElementById('step' + i);
+        const timerEl = document.getElementById('step' + i + 'Timer');
+        const hintEl = document.getElementById('step' + i + 'Hint');
+
+        el.className = 'step ' + stepStates[i];
+        timerEl.textContent = formatTime(stepElapsed[i]);
+
+        switch (stepStates[i]) {
+          case 'locked':
+            hintEl.textContent = '';
+            break;
+          case 'available':
+            hintEl.textContent = '▶ Tap to start';
+            break;
+          case 'running':
+            hintEl.textContent = '⏱ Tap to complete';
+            break;
+          case 'completed':
+            hintEl.textContent = '✓ Done';
+            break;
+        }
+      }
+    }
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return m + ':' + String(s).padStart(2, '0');
+    }
+
+    function handleStepClick(stepIndex) {
+      const state = stepStates[stepIndex];
+
+      if (state === 'available') {
+        // Start timer
+        stepStates[stepIndex] = 'running';
+        stepStartTimes[stepIndex] = Date.now() - (stepElapsed[stepIndex] * 1000);
+        stepTimers[stepIndex] = setInterval(() => {
+          stepElapsed[stepIndex] = Math.floor((Date.now() - stepStartTimes[stepIndex]) / 1000);
+          document.getElementById('step' + stepIndex + 'Timer').textContent = formatTime(stepElapsed[stepIndex]);
+        }, 200);
+        renderSteps();
+      } else if (state === 'running') {
+        // Complete step
+        clearInterval(stepTimers[stepIndex]);
+        stepTimers[stepIndex] = null;
+        stepElapsed[stepIndex] = Math.floor((Date.now() - stepStartTimes[stepIndex]) / 1000);
+        stepStates[stepIndex] = 'completed';
+
+        // Unlock next step
+        if (stepIndex + 1 < STEP_COUNT) {
+          stepStates[stepIndex + 1] = 'available';
+        }
+        renderSteps();
+      }
+      // locked or completed: do nothing
+    }
+
+    // Attach step click handlers
+    for (let i = 0; i < STEP_COUNT; i++) {
+      document.getElementById('step' + i).addEventListener('click', () => handleStepClick(i));
+    }
+
+    // Reset brew button
+    btnResetBrew.addEventListener('click', () => {
+      if (selectedRecipe) {
+        resetBrewState();
+      }
+    });
+
+    // --- Slider events ---
+    slider.addEventListener('input', handleSliderInput);
+    btnResetRatio.addEventListener('click', resetRatio);
+
+    // --- Init ---
+    positionDefaultMarker();
+    handleSliderInput();
   </script>
 </body>
 </html>
