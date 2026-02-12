@@ -324,24 +324,15 @@
 
     .default-marker {
       position: absolute;
-      top: -6px;
+      top: 50%;
+      transform: translateY(-50%);
       width: 2px;
-      height: 18px;
-      background: var(--highlight-border);
+      height: 20px;
+      background: var(--accent);
       border-radius: 1px;
       pointer-events: none;
-      /* positioned via JS */
-    }
-
-    .default-marker-label {
-      position: absolute;
-      top: -22px;
-      font-size: 0.6rem;
-      font-weight: 600;
-      color: var(--highlight-border);
-      white-space: nowrap;
-      transform: translateX(-50%);
-      pointer-events: none;
+      z-index: 1;
+      /* positioned horizontally via JS */
     }
 
     .ratio-value {
@@ -636,7 +627,6 @@
         <div class="slider-track-container">
           <input type="range" id="ratioSlider" min="14" max="18" step="0.1" value="16.7">
           <div class="default-marker" id="defaultMarker"></div>
-          <div class="default-marker-label" id="defaultMarkerLabel">default</div>
         </div>
         <span class="ratio-value" id="ratioDisplay">1:16.7</span>
       </div>
@@ -685,7 +675,7 @@
     const tableBody = document.getElementById('recipeTableBody');
     const btnResetRatio = document.getElementById('btnResetRatio');
     const defaultMarker = document.getElementById('defaultMarker');
-    const defaultMarkerLabel = document.getElementById('defaultMarkerLabel');
+
     const stepsGrid = document.getElementById('stepsGrid');
     const noRecipeNotice = document.getElementById('noRecipeNotice');
     const brewRecipeLabel = document.getElementById('brewRecipeLabel');
@@ -703,8 +693,12 @@
       const min = parseFloat(slider.min);
       const max = parseFloat(slider.max);
       const pct = ((DEFAULT_RATIO - min) / (max - min)) * 100;
-      defaultMarker.style.left = `calc(${pct}% - 1px)`;
-      defaultMarkerLabel.style.left = `${pct}%`;
+      // Offset to account for the slider thumb width (11px half-thumb)
+      const trackWidth = slider.offsetWidth;
+      const thumbHalf = 11;
+      const usable = trackWidth - 2 * thumbHalf;
+      const px = thumbHalf + (pct / 100) * usable;
+      defaultMarker.style.left = px + 'px';
     }
 
     // --- Slider snap to default ---
@@ -884,6 +878,7 @@
 
     // --- Init ---
     positionDefaultMarker();
+    window.addEventListener('resize', positionDefaultMarker);
     handleSliderInput();
   </script>
 </body>
