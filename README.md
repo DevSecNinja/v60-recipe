@@ -4,7 +4,7 @@ A simple, static V60 pour-over coffee recipe calculator based on [James Hoffmann
 
 ## 🔗 Live Site
 
-**[devsecninja.github.io/v60-recipe](https://v60.ravensberg.org/)**
+**[v60.ravensberg.org](https://v60.ravensberg.org/)**
 
 ## What It Does
 
