@@ -12,13 +12,13 @@ The V60 Recipe Calculator is a single-file static web application (`index.html`)
 ├── manifest.json                   # PWA web app manifest
 ├── sw.js                           # Service worker for offline caching
 ├── icons/                          # PWA & Apple touch icons
-│   ├── icon.svg                    # Source SVG icon
-│   ├── icon-maskable.svg           # Source SVG maskable icon
+│   ├── icon.png                    # Source logo (1024×1024)
 │   ├── icon-192.png                # 192×192 app icon
 │   ├── icon-512.png                # 512×512 app icon
 │   ├── icon-maskable-192.png       # 192×192 maskable icon
 │   ├── icon-maskable-512.png       # 512×512 maskable icon
-│   └── apple-touch-icon.png        # 180×180 Apple touch icon
+│   ├── apple-touch-icon.png        # 180×180 Apple touch icon
+│   └── favicon.ico                 # Multi-size favicon (16×16, 32×32)
 ├── .github/workflows/pages.yml     # GitHub Pages deployment workflow
 ├── README.md                       # Project documentation
 ├── ARCHITECTURE.md                 # This file
