@@ -623,7 +623,7 @@
           <div class="brew-selected-recipe" id="brewRecipeLabel">Select a recipe from the table below</div>
         </div>
         <div class="brew-actions">
-          <button class="btn-reset-brew" id="btnResetBrew" title="Reset all brew steps">Reset</button>
+          <button type="button" class="btn-reset-brew" id="btnResetBrew" title="Reset all brew steps">Reset</button>
         </div>
       </div>
       <div id="noRecipeNotice" class="no-recipe-notice">
@@ -676,7 +676,7 @@
           <span>1:14 (stronger)</span>
           <span>1:18 (lighter)</span>
         </div>
-        <button class="btn-reset-ratio hidden" id="btnResetRatio">Reset to 1:16.7</button>
+        <button type="button" class="btn-reset-ratio hidden" id="btnResetRatio">Reset to 1:16.7</button>
       </div>
     </section>
 
@@ -687,11 +687,11 @@
         <table>
           <thead>
             <tr>
-              <th>Water (g)</th>
-              <th>Coffee (g)</th>
-              <th>Bloom (g)</th>
-              <th>Pour 1 to (g)</th>
-              <th>Pour 2 to (g)</th>
+              <th scope="col">Water (g)</th>
+              <th scope="col">Coffee (g)</th>
+              <th scope="col">Bloom (g)</th>
+              <th scope="col">Pour 1 to (g)</th>
+              <th scope="col">Pour 2 to (g)</th>
             </tr>
           </thead>
           <tbody id="recipeTableBody">

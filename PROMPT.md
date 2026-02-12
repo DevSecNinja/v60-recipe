@@ -46,6 +46,6 @@ Users often want to brew slightly more or less than 250ml but don't want to reca
 
 - Write a `README.md` with:
   - What the site does
-  - A link to the live GitHub Pages URL (`https://devsecninja.github.io/v60-recipe/`)
+  - A link to the live GitHub Pages URL (`https://v60.ravensberg.org/`)
   - Credit to James Hoffmann
   - A note that the site has zero dependencies and requires no maintenance
