@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Maskable icon: safe zone is inner 80% (40px padding on each side at 512) -->
+  <rect width="512" height="512" fill="#3E2723"/>
+  <!-- V60 cone shape - centered in safe zone -->
+  <polygon points="256,110 360,380 152,380" fill="none" stroke="#EFEBE9" stroke-width="14" stroke-linejoin="round"/>
+  <!-- Ridges inside cone -->
+  <line x1="210" y1="260" x2="256" y2="145" stroke="#8D6E63" stroke-width="5" stroke-linecap="round"/>
+  <line x1="235" y1="260" x2="256" y2="145" stroke="#8D6E63" stroke-width="5" stroke-linecap="round"/>
+  <line x1="256" y1="260" x2="256" y2="145" stroke="#8D6E63" stroke-width="5" stroke-linecap="round"/>
+  <line x1="277" y1="260" x2="256" y2="145" stroke="#8D6E63" stroke-width="5" stroke-linecap="round"/>
+  <line x1="302" y1="260" x2="256" y2="145" stroke="#8D6E63" stroke-width="5" stroke-linecap="round"/>
+  <!-- Steam lines -->
+  <path d="M228,100 Q228,80 238,70" fill="none" stroke="#A1887F" stroke-width="7" stroke-linecap="round" opacity="0.7"/>
+  <path d="M256,90 Q256,68 266,58" fill="none" stroke="#A1887F" stroke-width="7" stroke-linecap="round" opacity="0.7"/>
+  <path d="M284,100 Q284,80 274,70" fill="none" stroke="#A1887F" stroke-width="7" stroke-linecap="round" opacity="0.7"/>
+  <!-- Coffee cup/server below -->
+  <rect x="210" y="382" width="92" height="48" rx="6" fill="none" stroke="#EFEBE9" stroke-width="10"/>
+  <!-- Drip -->
+  <line x1="256" y1="365" x2="256" y2="382" stroke="#8D6E63" stroke-width="6" stroke-linecap="round" stroke-dasharray="4,8"/>
+  <!-- Text -->
+  <text x="256" y="468" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="36" fill="#EFEBE9">V60</text>
+</svg>
