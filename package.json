@@ -1,0 +1,18 @@
+{
+  "name": "v60-recipe",
+  "version": "1.0.0",
+  "private": true,
+  "description": "V60 Recipe Calculator",
+  "scripts": {
+    "test": "jest --verbose",
+    "test:unit": "jest --verbose --testPathPattern=tests/unit",
+    "test:html": "jest --verbose --testPathPattern=tests/html-validation",
+    "test:a11y": "jest --verbose --testPathPattern=tests/accessibility"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "html-validate": "^8.20.0",
+    "axe-core": "^4.9.0"
+  }
+}
