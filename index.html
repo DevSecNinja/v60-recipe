@@ -686,7 +686,10 @@
     let stepStates = []; // 'locked' | 'available' | 'running' | 'completed'
     let stepTimers = []; // interval IDs
     let stepStartTimes = []; // timestamps
-    let stepElapsed = []; // elapsed seconds
+    let stepRemaining = []; // remaining seconds (countdown)
+
+    // Step durations in seconds: Bloom 45s, Pour 1 30s, Pour 2 30s, Drain 105s
+    const STEP_DURATIONS = [45, 30, 30, 105];
 
     // --- Position default marker on slider track ---
     function positionDefaultMarker() {
@@ -789,7 +792,7 @@
       }
       stepTimers = new Array(STEP_COUNT).fill(null);
       stepStartTimes = new Array(STEP_COUNT).fill(null);
-      stepElapsed = new Array(STEP_COUNT).fill(0);
+      stepRemaining = STEP_DURATIONS.slice(); // copy durations as initial countdown
       stepStates = new Array(STEP_COUNT).fill('locked');
 
       // First step is available
@@ -807,7 +810,7 @@
         const hintEl = document.getElementById('step' + i + 'Hint');
 
         el.className = 'step ' + stepStates[i];
-        timerEl.textContent = formatTime(stepElapsed[i]);
+        timerEl.textContent = formatTime(Math.max(0, stepRemaining[i]));
 
         switch (stepStates[i]) {
           case 'locked':
@@ -817,7 +820,7 @@
             hintEl.textContent = '▶ Tap to start';
             break;
           case 'running':
-            hintEl.textContent = '⏱ Tap to complete';
+            hintEl.textContent = '⏱ Tap to skip';
             break;
           case 'completed':
             hintEl.textContent = '✓ Done';
@@ -832,30 +835,39 @@
       return m + ':' + String(s).padStart(2, '0');
     }
 
+    function completeStep(stepIndex) {
+      clearInterval(stepTimers[stepIndex]);
+      stepTimers[stepIndex] = null;
+      stepRemaining[stepIndex] = 0;
+      stepStates[stepIndex] = 'completed';
+
+      // Unlock next step
+      if (stepIndex + 1 < STEP_COUNT) {
+        stepStates[stepIndex + 1] = 'available';
+      }
+      renderSteps();
+    }
+
     function handleStepClick(stepIndex) {
       const state = stepStates[stepIndex];
 
       if (state === 'available') {
-        // Start timer
+        // Start countdown
         stepStates[stepIndex] = 'running';
-        stepStartTimes[stepIndex] = Date.now() - (stepElapsed[stepIndex] * 1000);
+        stepStartTimes[stepIndex] = Date.now();
+        const duration = stepRemaining[stepIndex];
         stepTimers[stepIndex] = setInterval(() => {
-          stepElapsed[stepIndex] = Math.floor((Date.now() - stepStartTimes[stepIndex]) / 1000);
-          document.getElementById('step' + stepIndex + 'Timer').textContent = formatTime(stepElapsed[stepIndex]);
+          const elapsed = (Date.now() - stepStartTimes[stepIndex]) / 1000;
+          stepRemaining[stepIndex] = Math.max(0, Math.ceil(duration - elapsed));
+          document.getElementById('step' + stepIndex + 'Timer').textContent = formatTime(stepRemaining[stepIndex]);
+          if (stepRemaining[stepIndex] <= 0) {
+            completeStep(stepIndex);
+          }
         }, 200);
         renderSteps();
       } else if (state === 'running') {
-        // Complete step
-        clearInterval(stepTimers[stepIndex]);
-        stepTimers[stepIndex] = null;
-        stepElapsed[stepIndex] = Math.floor((Date.now() - stepStartTimes[stepIndex]) / 1000);
-        stepStates[stepIndex] = 'completed';
-
-        // Unlock next step
-        if (stepIndex + 1 < STEP_COUNT) {
-          stepStates[stepIndex + 1] = 'available';
-        }
-        renderSteps();
+        // Manual skip / early complete
+        completeStep(stepIndex);
       }
       // locked or completed: do nothing
     }
