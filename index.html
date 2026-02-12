@@ -721,7 +721,7 @@
     function handleSliderInput() {
       let val = parseFloat(slider.value);
       // Sticky: snap to default if within ±0.2
-      if (Math.abs(val - DEFAULT_RATIO) < 0.2) {
+      if (Math.abs(val - DEFAULT_RATIO) <= 0.2) {
         val = DEFAULT_RATIO;
         slider.value = DEFAULT_RATIO;
       }
