@@ -38,7 +38,6 @@ A 4-step guided brew timer driven by a finite state machine (see below). Steps d
 ### 3. Ratio Slider
 An `<input type="range">` (1:14 to 1:18, step 0.1) that recalculates the entire recipe table on every `input` event. Features:
 - **Sticky default** — snaps to 1:16.7 when the thumb is within ±0.3 of the default value, making it easy to return to the standard ratio.
-- **Visual default marker** — an accent-colored tick mark on the slider track positioned via JavaScript to account for thumb offset.
 - **Reset button** — appears only when the slider is away from the default.
 
 ### 4. Recipe Table

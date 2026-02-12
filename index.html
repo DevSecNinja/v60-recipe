@@ -359,19 +359,6 @@
       background: var(--medium-brown);
     }
 
-    .default-marker {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 2px;
-      height: 20px;
-      background: var(--accent);
-      border-radius: 1px;
-      pointer-events: none;
-      z-index: 1;
-      /* positioned horizontally via JS */
-    }
-
     .ratio-value {
       font-size: 1.1rem;
       font-weight: 700;
@@ -667,7 +654,6 @@
         <label for="ratioSlider">1 :</label>
         <div class="slider-track-container">
           <input type="range" id="ratioSlider" min="14" max="18" step="0.1" value="16.7">
-          <div class="default-marker" id="defaultMarker"></div>
         </div>
         <span class="ratio-value" id="ratioDisplay">1:16.7</span>
       </div>
@@ -715,7 +701,6 @@
     const ratioDisplay = document.getElementById('ratioDisplay');
     const tableBody = document.getElementById('recipeTableBody');
     const btnResetRatio = document.getElementById('btnResetRatio');
-    const defaultMarker = document.getElementById('defaultMarker');
 
     const stepsGrid = document.getElementById('stepsGrid');
     const noRecipeNotice = document.getElementById('noRecipeNotice');
@@ -731,19 +716,6 @@
 
     // Step durations in seconds: Bloom 45s, Pour 1 30s, Pour 2 30s, Drain 105s
     const STEP_DURATIONS = [45, 30, 30, 105];
-
-    // --- Position default marker on slider track ---
-    function positionDefaultMarker() {
-      const min = parseFloat(slider.min);
-      const max = parseFloat(slider.max);
-      const pct = ((DEFAULT_RATIO - min) / (max - min)) * 100;
-      // Offset to account for the slider thumb width (11px half-thumb)
-      const trackWidth = slider.offsetWidth;
-      const thumbHalf = 11;
-      const usable = trackWidth - 2 * thumbHalf;
-      const px = thumbHalf + (pct / 100) * usable;
-      defaultMarker.style.left = px + 'px';
-    }
 
     // --- Slider snap to default ---
     function handleSliderInput() {
@@ -944,8 +916,6 @@
     btnResetRatio.addEventListener('click', resetRatio);
 
     // --- Init ---
-    positionDefaultMarker();
-    window.addEventListener('resize', positionDefaultMarker);
     handleSliderInput();
   </script>
 </body>
