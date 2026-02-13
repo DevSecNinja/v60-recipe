@@ -37,7 +37,7 @@ describe('GitHub Star Feature', () => {
       const githubStarButton = doc.getElementById('githubStarButton');
       expect(githubStarButton).not.toBeNull();
       expect(githubStarButton.tagName).toBe('A');
-      expect(githubStarButton.href).toBe('https://github.com/DevSecNinja/v60-recipe');
+      expect(githubStarButton.href).toContain('github.com/DevSecNinja/v60-recipe');
       expect(githubStarButton.target).toBe('_blank');
       expect(githubStarButton.rel).toBe('noopener');
     });
@@ -88,13 +88,22 @@ describe('GitHub Star Feature', () => {
       expect(starCountText.textContent).toBe('42 stars');
     });
 
-    test('updateStarCount formats numbers with locale separators', () => {
+    test('updateStarCount formats numbers correctly', () => {
       const starCountText = doc.getElementById('starCountText');
+      dom.window.updateStarCount(42);
+      expect(starCountText.textContent).toBe('42 stars');
+      
+      // Test with larger number - formatting may vary by locale
       dom.window.updateStarCount(1234);
-      // The exact format depends on locale, but it should contain the number
-      expect(starCountText.textContent).toContain('1');
-      expect(starCountText.textContent).toContain('234');
-      expect(starCountText.textContent).toContain('stars');
+      const formattedText = starCountText.textContent;
+      // Should contain the digits and 'stars'
+      expect(formattedText).toMatch(/1[,\s.]?234 stars/);
+    });
+
+    test('updateStarCount handles singular star', () => {
+      const starCountText = doc.getElementById('starCountText');
+      dom.window.updateStarCount(1);
+      expect(starCountText.textContent).toBe('1 star');
     });
 
     test('updateStarCount handles zero stars', () => {

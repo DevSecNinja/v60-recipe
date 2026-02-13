@@ -979,6 +979,7 @@
     handleSliderInput();
 
     // --- GitHub Star Count ---
+    // Note: Functions are kept in global scope for testing purposes
     async function fetchGitHubStars() {
       const CACHE_KEY = 'github_stars';
       const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
@@ -1019,7 +1020,8 @@
     function updateStarCount(count) {
       const starCountText = document.getElementById('starCountText');
       if (starCountText && count !== undefined) {
-        starCountText.textContent = `${count.toLocaleString()} stars`;
+        const plural = count === 1 ? 'star' : 'stars';
+        starCountText.textContent = `${count.toLocaleString()} ${plural}`;
       }
     }
 
