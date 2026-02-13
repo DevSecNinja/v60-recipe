@@ -1,5 +1,5 @@
 // V60 Recipe Calculator - Service Worker
-const CACHE_NAME = 'v60-recipe-v1.6.0';
+const CACHE_NAME = 'v60-recipe-v1.7.0';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -100,4 +100,31 @@ self.addEventListener('fetch', (event) => {
 
   // All other requests: network only
   event.respondWith(fetch(request));
+});
+
+// Handle notification click - open the app
+self.addEventListener('notificationclick', (event) => {
+  console.log('[SW] Notification clicked:', event.notification.tag);
+  event.notification.close();
+
+  // Open or focus the app
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // If app is already open, focus it
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Otherwise, open a new window
+      if (clients.openWindow) {
+        return clients.openWindow('/');
+      }
+    })
+  );
+});
+
+// Handle notification close (optional, for analytics)
+self.addEventListener('notificationclose', (event) => {
+  console.log('[SW] Notification closed:', event.notification.tag);
 });

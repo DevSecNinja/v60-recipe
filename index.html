@@ -973,6 +973,88 @@
       return m + ':' + String(s).padStart(2, '0');
     }
 
+    // --- Notification support ---
+    let notificationPermission = 'default';
+
+    // Request notification permission (iOS compatible)
+    async function requestNotificationPermission() {
+      if (!('Notification' in window)) {
+        console.debug('Notifications not supported');
+        return false;
+      }
+
+      // Check current permission
+      if (Notification.permission === 'granted') {
+        notificationPermission = 'granted';
+        return true;
+      }
+
+      // Don't ask if already denied
+      if (Notification.permission === 'denied') {
+        notificationPermission = 'denied';
+        return false;
+      }
+
+      // Request permission when user interacts (better UX)
+      try {
+        const permission = await Notification.requestPermission();
+        notificationPermission = permission;
+        return permission === 'granted';
+      } catch (error) {
+        console.debug('Could not request notification permission:', error);
+        return false;
+      }
+    }
+
+    // Show notification for step completion
+    function showStepNotification(stepIndex) {
+      if (notificationPermission !== 'granted') return;
+
+      const stepTitles = [
+        '☕ Bloom Complete',
+        '☕ First Pour Complete',
+        '☕ Second Pour Complete',
+        '☕ Coffee Ready!'
+      ];
+
+      const stepMessages = [
+        'Time for the first pour',
+        'Time for the second pour',
+        'Time to swirl and let it drain',
+        'Your V60 coffee is ready to enjoy!'
+      ];
+
+      try {
+        // Use service worker notification if available (better for iOS)
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.ready.then((registration) => {
+            registration.showNotification(stepTitles[stepIndex], {
+              body: stepMessages[stepIndex],
+              icon: './icons/icon-192.png',
+              badge: './icons/icon-192.png',
+              tag: 'v60-step-' + stepIndex,
+              requireInteraction: false,
+              vibrate: [200, 100, 200],
+              silent: false
+            });
+          });
+        } else {
+          // Fallback to regular notification
+          new Notification(stepTitles[stepIndex], {
+            body: stepMessages[stepIndex],
+            icon: './icons/icon-192.png',
+            badge: './icons/icon-192.png',
+            tag: 'v60-step-' + stepIndex,
+            requireInteraction: false,
+            vibrate: [200, 100, 200],
+            silent: false
+          });
+        }
+      } catch (error) {
+        console.debug('Could not show notification:', error);
+      }
+    }
+
     // --- Audio notification ---
     function playCompletionSound() {
       try {
@@ -1024,6 +1106,9 @@
       // Play completion sound
       playCompletionSound();
 
+      // Show notification
+      showStepNotification(stepIndex);
+
       // Unlock next step
       if (stepIndex + 1 < STEP_COUNT) {
         stepStates[stepIndex + 1] = 'available';
@@ -1045,6 +1130,11 @@
       const state = stepStates[stepIndex];
 
       if (state === 'available') {
+        // Request notification permission on first interaction (best practice for iOS)
+        if (stepIndex === 0 && notificationPermission === 'default') {
+          requestNotificationPermission();
+        }
+
         // Start countdown
         stepStates[stepIndex] = 'running';
         stepStartTimes[stepIndex] = Date.now();
@@ -1137,7 +1227,7 @@
     // --- Service Worker Registration ---
     if ('serviceWorker' in navigator) {
       let refreshing = false;
-      
+
       // Handle controller change (new SW activated)
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (refreshing) return;
@@ -1145,26 +1235,26 @@
         console.log('New service worker activated, reloading...');
         window.location.reload();
       });
-      
+
       navigator.serviceWorker.register('sw.js', {
         // Prevent service worker file from being cached by browser
         updateViaCache: 'none'
       }).then((reg) => {
         console.log('Service Worker registered, scope:', reg.scope);
-        
+
         // Check for updates on page load (important for iOS)
         reg.update();
-        
+
         // Check for updates every hour for long-running sessions
         setInterval(() => {
           reg.update();
         }, 3600000);
-        
+
         // Listen for updates
         reg.addEventListener('updatefound', () => {
           const newWorker = reg.installing;
           if (!newWorker) return;
-          
+
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               // New service worker available, tell it to take control
