@@ -1,5 +1,5 @@
 // V60 Recipe Calculator - Service Worker
-const CACHE_NAME = 'v60-recipe-v1.5.0';
+const CACHE_NAME = 'v60-recipe-v1.6.0';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -17,30 +17,44 @@ const FONT_URLS = [
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
 ];
 
+// Handle messages from clients
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 // Install: cache core assets
 self.addEventListener('install', (event) => {
+  console.log('[SW] Installing new service worker, version:', CACHE_NAME);
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
-  // Activate immediately
-  self.skipWaiting();
+  // Don't activate immediately - wait for message from client
+  // This prevents race conditions on iOS
 });
 
 // Activate: clean up old caches
 self.addEventListener('activate', (event) => {
+  console.log('[SW] Activating new service worker, version:', CACHE_NAME);
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
           .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+          .map((name) => {
+            console.log('[SW] Deleting old cache:', name);
+            return caches.delete(name);
+          })
       );
+    }).then(() => {
+      // Take control of all pages after caches are cleaned
+      console.log('[SW] Taking control of all clients');
+      return self.clients.claim();
     })
   );
-  // Take control of all pages immediately
-  self.clients.claim();
 });
 
 // Fetch: serve from cache, fall back to network, cache new responses

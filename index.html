@@ -1136,8 +1136,43 @@
 
     // --- Service Worker Registration ---
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').then((reg) => {
+      let refreshing = false;
+      
+      // Handle controller change (new SW activated)
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
+        refreshing = true;
+        console.log('New service worker activated, reloading...');
+        window.location.reload();
+      });
+      
+      navigator.serviceWorker.register('sw.js', {
+        // Prevent service worker file from being cached by browser
+        updateViaCache: 'none'
+      }).then((reg) => {
         console.log('Service Worker registered, scope:', reg.scope);
+        
+        // Check for updates on page load (important for iOS)
+        reg.update();
+        
+        // Check for updates every hour for long-running sessions
+        setInterval(() => {
+          reg.update();
+        }, 3600000);
+        
+        // Listen for updates
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+          
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New service worker available, tell it to take control
+              console.log('New service worker installed, activating...');
+              newWorker.postMessage({ type: 'SKIP_WAITING' });
+            }
+          });
+        });
       }).catch((err) => {
         console.warn('Service Worker registration failed:', err);
       });
