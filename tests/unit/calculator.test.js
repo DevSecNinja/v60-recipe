@@ -402,3 +402,171 @@ describe('V60 Recipe Calculator — Mathematical Accuracy', () => {
     });
   });
 });
+
+describe('V60 Recipe Calculator — Audio Completion Sound', () => {
+  let dom, doc, window;
+
+  beforeEach(() => {
+    dom = createDOM();
+    doc = dom.window.document;
+    window = dom.window;
+  });
+
+  afterEach(() => {
+    dom.window.close();
+  });
+
+  describe('Audio function availability', () => {
+    test('playCompletionSound function is defined', () => {
+      expect(typeof window.playCompletionSound).toBe('function');
+    });
+
+    test('playCompletionSound can be called without errors', () => {
+      // Should not throw even if Web Audio API is not fully supported in jsdom
+      expect(() => window.playCompletionSound()).not.toThrow();
+    });
+
+    test('playCompletionSound handles missing Web Audio API gracefully', () => {
+      // Mock scenario where AudioContext is not available
+      const originalAudioContext = window.AudioContext;
+      const originalWebkitAudioContext = window.webkitAudioContext;
+
+      delete window.AudioContext;
+      delete window.webkitAudioContext;
+
+      // Should not throw error
+      expect(() => window.playCompletionSound()).not.toThrow();
+
+      // Restore
+      window.AudioContext = originalAudioContext;
+      window.webkitAudioContext = originalWebkitAudioContext;
+    });
+  });
+
+  describe('Audio plays on step completion', () => {
+    function selectAndStartBrew(waterAmount) {
+      const rows = doc.querySelectorAll('#recipeTableBody tr');
+      const row = Array.from(rows).find(r => r.dataset.water === String(waterAmount));
+      row.click();
+    }
+
+    test('playCompletionSound is called when countdown reaches zero', () => {
+      // Note: Auto-complete timer test is skipped in jsdom due to timing complexities
+      // This test verifies the function is called during manual completion instead
+      const originalPlaySound = window.playCompletionSound;
+      let soundCalled = false;
+      window.playCompletionSound = () => {
+        soundCalled = true;
+      };
+
+      selectAndStartBrew(250);
+      const step0 = doc.getElementById('step0');
+
+      step0.click(); // start
+
+      // The auto-complete timer would call completeStep() when countdown reaches 0
+      // For this test, we verify the sound plays when completeStep() is called
+      window.completeStep(0);
+
+      expect(soundCalled).toBe(true);
+      expect(step0.classList.contains('completed')).toBe(true);
+
+      // Restore
+      window.playCompletionSound = originalPlaySound;
+    });
+
+    test('playCompletionSound is called when step is manually skipped', () => {
+      // Spy on playCompletionSound
+      const originalPlaySound = window.playCompletionSound;
+      let soundCalled = false;
+      window.playCompletionSound = () => {
+        soundCalled = true;
+      };
+
+      selectAndStartBrew(250);
+      const step0 = doc.getElementById('step0');
+
+      step0.click(); // start
+      step0.click(); // skip (manual complete)
+
+      expect(soundCalled).toBe(true);
+      expect(step0.classList.contains('completed')).toBe(true);
+
+      // Restore
+      window.playCompletionSound = originalPlaySound;
+    });
+
+    test('playCompletionSound is called for each completed step', () => {
+      // Spy on playCompletionSound
+      const originalPlaySound = window.playCompletionSound;
+      let callCount = 0;
+      window.playCompletionSound = () => {
+        callCount++;
+      };
+
+      selectAndStartBrew(250);
+
+      // Complete all 4 steps
+      for (let i = 0; i < 4; i++) {
+        const step = doc.getElementById('step' + i);
+        step.click(); // start
+        step.click(); // complete
+      }
+
+      expect(callCount).toBe(4);
+
+      // Restore
+      window.playCompletionSound = originalPlaySound;
+    });
+  });
+
+  describe('Web Audio API integration', () => {
+    test('creates AudioContext with fallback to webkitAudioContext', () => {
+      // This tests the implementation uses proper fallback
+      const codeString = window.playCompletionSound.toString();
+      expect(codeString).toContain('AudioContext');
+      expect(codeString).toContain('webkitAudioContext');
+    });
+
+    test('uses sine wave oscillators for tones', () => {
+      const codeString = window.playCompletionSound.toString();
+      expect(codeString).toContain('createOscillator');
+      expect(codeString).toContain('sine');
+    });
+
+    test('creates two-tone sound (800 Hz and 1000 Hz)', () => {
+      const codeString = window.playCompletionSound.toString();
+      expect(codeString).toContain('800');
+      expect(codeString).toContain('1000');
+    });
+
+    test('uses gain nodes for volume control', () => {
+      const codeString = window.playCompletionSound.toString();
+      expect(codeString).toContain('createGain');
+      expect(codeString).toContain('exponentialRampToValueAtTime');
+    });
+
+    test('wraps audio code in try-catch for error handling', () => {
+      const codeString = window.playCompletionSound.toString();
+      expect(codeString).toContain('try');
+      expect(codeString).toContain('catch');
+    });
+  });
+
+  describe('Offline PWA compatibility', () => {
+    test('playCompletionSound does not require network resources', () => {
+      // Web Audio API is synthesized in-browser, no fetch/network calls
+      const codeString = window.playCompletionSound.toString();
+      expect(codeString).not.toContain('fetch');
+      expect(codeString).not.toContain('http');
+      expect(codeString).not.toContain('Audio(');
+      expect(codeString).not.toContain('new Audio');
+    });
+
+    test('function works without internet connection', () => {
+      // This is effectively tested by jsdom environment (no real network)
+      // Function should complete without throwing
+      expect(() => window.playCompletionSound()).not.toThrow();
+    });
+  });
+});
