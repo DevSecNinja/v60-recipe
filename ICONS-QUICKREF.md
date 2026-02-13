@@ -1,8 +1,8 @@
 # Quick Icon Reference
 
-## 🎨 Your New Logo is Now Live!
+## 🎨 Your New Logo is Now Live
 
-All icons have been generated from your V60 iOS Icon Composer design and are integrated throughout the project.
+All icons have been generated from the V60 iOS Icon Composer design and are integrated throughout the project.
 
 ## 📁 Key Files
 
@@ -14,6 +14,7 @@ All icons have been generated from your V60 iOS Icon Composer design and are int
 ## 🖼️ Source Images
 
 Your new logo design is sourced from:
+
 - **Dark theme** (currently used): `icons/V60-iOS-Dark-1024x1024@1x.png`
 - **Light theme** (backup): `icons/V60-iOS-Default-1024x1024@1x.png`
 - **Icon Composer**: `icons/V60.icon/Assets/logo-transparent.png`
