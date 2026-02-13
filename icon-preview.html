@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>V60 Recipe - Icon Preview</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      text-align: center;
+      color: #3E2723;
+      margin-bottom: 10px;
+      font-size: 2.5rem;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 40px;
+      font-size: 1.1rem;
+    }
+
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      margin-bottom: 50px;
+    }
+
+    .icon-card {
+      background: #fafafa;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 2px solid #e0e0e0;
+    }
+
+    .icon-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .icon-wrapper {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 150px;
+    }
+
+    .icon-wrapper img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .icon-label {
+      font-weight: 600;
+      color: #3E2723;
+      margin-bottom: 5px;
+      font-size: 0.95rem;
+    }
+
+    .icon-size {
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .section {
+      margin-bottom: 50px;
+    }
+
+    .section-title {
+      color: #3E2723;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #8D6E63;
+      font-size: 1.8rem;
+    }
+
+    .maskable-demo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .mask-shape {
+      text-align: center;
+    }
+
+    .mask-wrapper {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 10px;
+      position: relative;
+      overflow: hidden;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mask-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .circle { border-radius: 50%; }
+    .squircle { border-radius: 30%; }
+    .rounded { border-radius: 20%; }
+    .square { border-radius: 0; }
+
+    .mask-label {
+      font-size: 0.85rem;
+      color: #666;
+      font-weight: 500;
+    }
+
+    .info-box {
+      background: linear-gradient(135deg, #3E2723 0%, #5D4037 100%);
+      color: white;
+      padding: 25px;
+      border-radius: 12px;
+      margin-top: 40px;
+    }
+
+    .info-box h3 {
+      margin-bottom: 15px;
+      font-size: 1.4rem;
+    }
+
+    .info-box ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .info-box li {
+      padding: 8px 0;
+      padding-left: 25px;
+      position: relative;
+    }
+
+    .info-box li:before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #66BB6A;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .icon-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>☕ V60 Recipe Icon Preview</h1>
+    <p class="subtitle">All generated icons for your Progressive Web App</p>
+
+    <!-- PWA Standard Icons -->
+    <div class="section">
+      <h2 class="section-title">PWA Standard Icons</h2>
+      <div class="icon-grid">
+        <div class="icon-card">
+          <div class="icon-wrapper">
+            <img src="icons/icon-72.png" alt="Icon 72x72">
+          </div>
+          <div class="icon-label">Standard Icon</div>
+          <div class="icon-size">72×72</div>
+        </div>
+        <div class="icon-card">
+          <div class="icon-wrapper">
+            <img src="icons/icon-96.png" alt="Icon 96x96">
+          </div>
+          <div class="icon-label">Standard Icon</div>
+          <div class="icon-size">96×96</div>
+        </div>
+        <div class="icon-card">
+          <div class="icon-wrapper">
+            <img src="icons/icon-128.png" alt="Icon 128x128">
+          </div>
+          <div class="icon-label">Standard Icon</div>
+          <div class="icon-size">128×128</div>
+        </div>
+        <div class="icon-card">
+          <div class="icon-wrapper">
+            <img src="icons/icon-144.png" alt="Icon 144x144">
+          </div>
+          <div class="icon-label">Standard Icon</div>
+          <div class="icon-size">144×144</div>
+        </div>
+        <div class="icon-card">
+          <div class="icon-wrapper">
+            <img src="icons/icon-192.png" alt="Icon 192x192">
+          </div>
+          <div class="icon-label">Standard Icon</div>
+          <div class="icon-size">192×192</div>
+        </div>
+        <div class="icon-card">
+          <div class="icon-wrapper">
+            <img src="icons/icon-512.png" alt="Icon 512x512">
+          </div>
+          <div class="icon-label">Standard Icon</div>
+          <div class="icon-size">512×512</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Maskable Icons with Shape Demos -->
+    <div class="section">
+      <h2 class="section-title">Maskable Icons (Adaptive)</h2>
+      <p style="color: #666; margin-bottom: 20px;">
+        These icons include safe zone padding and look great with any system mask shape.
+      </p>
+      <div class="maskable-demo">
+        <div class="mask-shape">
+          <div class="mask-wrapper circle">
+            <img src="icons/icon-maskable-192.png" alt="Maskable Circle">
+          </div>
+          <div class="mask-label">Circle</div>
+        </div>
+        <div class="mask-shape">
+          <div class="mask-wrapper squircle">
+            <img src="icons/icon-maskable-192.png" alt="Maskable Squircle">
+          </div>
+          <div class="mask-label">Squircle</div>
+        </div>
+        <div class="mask-shape">
+          <div class="mask-wrapper rounded">
+            <img src="icons/icon-maskable-192.png" alt="Maskable Rounded">
+          </div>
+          <div class="mask-label">Rounded</div>
+        </div>
+        <div class="mask-shape">
+          <div class="mask-wrapper square">
+            <img src="icons/icon-maskable-192.png" alt="Maskable Square">
+          </div>
+          <div class="mask-label">Square</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- iOS & Web Icons -->
+    <div class="section">
+      <h2 class="section-title">iOS & Web Icons</h2>
+      <div class="icon-grid">
+        <div class="icon-card">
+          <div class="icon-wrapper">
+            <img src="icons/apple-touch-icon.png" alt="Apple Touch Icon" style="max-width: 120px;">
+          </div>
+          <div class="icon-label">Apple Touch Icon</div>
+          <div class="icon-size">180×180</div>
+        </div>
+        <div class="icon-card">
+          <div class="icon-wrapper">
+            <img src="icons/icon-192.png" alt="Favicon" style="max-width: 64px;">
+          </div>
+          <div class="icon-label">Favicon (displayed as PNG)</div>
+          <div class="icon-size">32×32 + 16×16</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="info-box">
+      <h3>✨ Icon Integration Complete</h3>
+      <ul>
+        <li>All PWA icons generated (72px through 512px)</li>
+        <li>Maskable icons with 20% safe zone padding</li>
+        <li>iOS home screen icon ready</li>
+        <li>Multi-resolution favicon created</li>
+        <li>manifest.json updated with all icon references</li>
+        <li>Dark theme design perfectly matches app aesthetic</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

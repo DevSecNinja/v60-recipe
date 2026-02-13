@@ -1,5 +1,5 @@
 // V60 Recipe Calculator - Service Worker
-const CACHE_NAME = 'v60-recipe-v1.0.0';
+const CACHE_NAME = 'v60-recipe-v1.1.0';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -7,7 +7,9 @@ const ASSETS_TO_CACHE = [
   './icons/favicon.ico',
   './icons/apple-touch-icon.png',
   './icons/icon-192.png',
-  './icons/icon-512.png'
+  './icons/icon-512.png',
+  './icons/icon-maskable-192.png',
+  './icons/icon-maskable-512.png'
 ];
 
 // Google Fonts to cache
