@@ -845,38 +845,48 @@
     const STEP_DURATIONS = [45, 30, 30, 105];
 
     // --- Wake Lock API ---
+    // Pending promise to serialize wake lock requests
+    let wakeLockPending = null;
+
     // Request wake lock to keep screen on during brewing
     async function requestWakeLock() {
       if (!('wakeLock' in navigator)) {
-        console.debug('Wake Lock API not supported');
         return false;
       }
 
       // If a wake lock is already held, do not request another one
       if (wakeLock !== null) {
-        console.debug('Wake Lock already held');
         return true;
       }
 
-      try {
-        const currentWakeLock = await navigator.wakeLock.request('screen');
-        wakeLock = currentWakeLock;
-        console.debug('Wake Lock acquired');
-        
-        // Listen for wake lock release (e.g., tab becomes hidden)
-        currentWakeLock.addEventListener('release', () => {
-          console.debug('Wake Lock released');
-          // Only clear the global if it still refers to this sentinel
-          if (wakeLock === currentWakeLock) {
-            wakeLock = null;
-          }
-        });
-        
-        return true;
-      } catch (error) {
-        console.debug('Could not acquire Wake Lock:', error);
-        return false;
+      // If a request is already in flight, wait for it
+      if (wakeLockPending !== null) {
+        return wakeLockPending;
       }
+
+      // Create a new request and track it
+      wakeLockPending = (async () => {
+        try {
+          const currentWakeLock = await navigator.wakeLock.request('screen');
+          wakeLock = currentWakeLock;
+          
+          // Listen for wake lock release (e.g., tab becomes hidden)
+          currentWakeLock.addEventListener('release', () => {
+            // Only clear the global if it still refers to this sentinel
+            if (wakeLock === currentWakeLock) {
+              wakeLock = null;
+            }
+          });
+          
+          return true;
+        } catch (error) {
+          return false;
+        } finally {
+          wakeLockPending = null;
+        }
+      })();
+
+      return wakeLockPending;
     }
 
     // Release wake lock to restore default screen behavior
@@ -887,9 +897,8 @@
         wakeLock = null;
         try {
           await currentWakeLock.release();
-          console.debug('Wake Lock released explicitly');
         } catch (error) {
-          console.debug('Could not release Wake Lock:', error);
+          // Silently handle release errors
         }
       }
     }
