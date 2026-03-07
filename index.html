@@ -881,10 +881,12 @@
 
     // Release wake lock to restore default screen behavior
     async function releaseWakeLock() {
-      if (wakeLock !== null) {
+      const currentWakeLock = wakeLock;
+      if (currentWakeLock !== null) {
+        // Clear shared reference before awaiting release to avoid races
+        wakeLock = null;
         try {
-          await wakeLock.release();
-          wakeLock = null;
+          await currentWakeLock.release();
           console.debug('Wake Lock released explicitly');
         } catch (error) {
           console.debug('Could not release Wake Lock:', error);
