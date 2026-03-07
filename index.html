@@ -859,13 +859,13 @@
         return true;
       }
 
-      // If a request is already in flight, wait for it
+      // If a request is already in flight, wait for it and return the result
       if (wakeLockPending !== null) {
         return wakeLockPending;
       }
 
-      // Create a new request and track it
-      wakeLockPending = (async () => {
+      // Create a new request and track it as pending
+      const pendingRequest = (async () => {
         try {
           const currentWakeLock = await navigator.wakeLock.request('screen');
           wakeLock = currentWakeLock;
@@ -882,11 +882,15 @@
         } catch (error) {
           return false;
         } finally {
-          wakeLockPending = null;
+          // Clear pending only if this is still the active pending request
+          if (wakeLockPending === pendingRequest) {
+            wakeLockPending = null;
+          }
         }
       })();
 
-      return wakeLockPending;
+      wakeLockPending = pendingRequest;
+      return pendingRequest;
     }
 
     // Release wake lock to restore default screen behavior
