@@ -10,7 +10,7 @@
     "test:a11y": "jest --verbose --testPathPattern=tests/accessibility"
   },
   "devDependencies": {
-    "jest": "^29.7.0",
+    "jest": "^30.0.0",
     "jest-environment-jsdom": "^30.2.0",
     "html-validate": "^8.20.0",
     "axe-core": "^4.9.0"
