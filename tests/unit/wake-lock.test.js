@@ -79,12 +79,12 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
       expect(window.isBrewRunning()).toBe(true);
     });
 
-    test('returns false after step is completed', () => {
+    test('returns true after a step is completed (next step auto-starts)', () => {
       selectRow(250);
       const step0 = doc.getElementById('step0');
       step0.click(); // start step
-      step0.click(); // complete step
-      expect(window.isBrewRunning()).toBe(false);
+      step0.click(); // complete step → next step auto-starts
+      expect(window.isBrewRunning()).toBe(true);
     });
 
     test('returns true during any running step', () => {

@@ -282,13 +282,13 @@ describe('V60 Recipe Calculator — Core Logic', () => {
       expect(step0.classList.contains('completed')).toBe(true);
     });
 
-    test('completing a step unlocks the next step', () => {
+    test('completing a step auto-starts the next step', () => {
       selectAndStartBrew(250);
       const step0 = doc.getElementById('step0');
       step0.click(); // start
-      step0.click(); // complete
+      step0.click(); // complete → next step auto-starts
       const step1 = doc.getElementById('step1');
-      expect(step1.classList.contains('available')).toBe(true);
+      expect(step1.classList.contains('running')).toBe(true);
     });
 
     test('clicking a locked step does nothing', () => {
