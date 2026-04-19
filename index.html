@@ -646,6 +646,12 @@
       color: #E65100;
     }
 
+    tbody tr.favorite td:first-child::after {
+      content: ' ♥';
+      font-size: 0.75em;
+      color: #E65100;
+    }
+
     .favorites-empty {
       padding: 0.75rem 1.5rem 1rem;
       font-size: 0.75rem;
@@ -1033,7 +1039,7 @@
         const row = document.createElement('tr');
 
         const ratioCell = document.createElement('td');
-        ratioCell.textContent = `1:${favorite.ratio}`;
+        ratioCell.textContent = `1:${Number(favorite.ratio).toFixed(1)}`;
         row.appendChild(ratioCell);
 
         const waterCell = document.createElement('td');
@@ -1081,7 +1087,7 @@
         favoriteRecipes[key] = {
           water: selectedRecipe.water,
           coffee: selectedRecipe.coffee,
-          ratio: parseFloat(slider.value).toFixed(1),
+          ratio: parseFloat(slider.value),
           description: '',
           createdAt: Date.now()
         };
@@ -1199,10 +1205,8 @@
         if (isSelected) classes.push('selected');
         if (isFavorite) classes.push('favorite');
 
-        const favoritePrefix = isFavorite ? '♥ ' : '';
-
         html += `<tr class="${classes.join(' ')}" data-water="${water}" data-coffee="${coffee}" data-bloom="${bloom}" data-pour1="${pour1}" data-pour2="${pour2}">
-          <td>${favoritePrefix}${water}g</td>
+          <td>${water}g</td>
           <td>${coffee}g</td>
           <td>${bloom}g</td>
           <td>${pour1}g</td>
