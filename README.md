@@ -12,6 +12,7 @@ A simple, static V60 pour-over coffee recipe calculator based on [James Hoffmann
 - Shows coffee dose, bloom water, and pour targets for each brew size
 - Highlights the classic 250ml recipe (15g coffee → 250g water)
 - Includes an adjustable ratio slider (1:14 – 1:18) that recalculates all values in real time
+- Lets you favorite recipes and save a short personal description for each
 - Mobile-friendly — designed to be checked on your phone while brewing
 
 ## Tech
