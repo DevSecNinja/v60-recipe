@@ -208,6 +208,33 @@
       background: var(--cream);
     }
 
+    .btn-favorite-recipe {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      border: 1.5px solid var(--highlight-border);
+      background: var(--white);
+      color: var(--highlight-border);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-favorite-recipe:hover:not(:disabled) {
+      background: var(--highlight-bg);
+    }
+
+    .btn-favorite-recipe.active {
+      background: var(--highlight-bg);
+      color: #E65100;
+    }
+
+    .btn-favorite-recipe:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     .steps-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -615,6 +642,45 @@
       background: linear-gradient(180deg, var(--selected-border), var(--highlight-border));
     }
 
+    tbody tr.favorite td:first-child {
+      color: #E65100;
+    }
+
+    .favorites-empty {
+      padding: 0.75rem 1.5rem 1rem;
+      font-size: 0.75rem;
+      color: var(--light-accent);
+      font-style: italic;
+    }
+
+    .favorite-description-input {
+      width: 100%;
+      min-width: 140px;
+      padding: 0.35rem 0.45rem;
+      border: 1px solid var(--cream);
+      border-radius: 6px;
+      font: inherit;
+      font-size: 0.75rem;
+      color: var(--text-primary);
+      background: var(--white);
+    }
+
+    .favorite-remove-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.25rem 0.45rem;
+      border: 1px solid var(--cream);
+      border-radius: 5px;
+      background: var(--white);
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .favorite-remove-btn:hover {
+      background: var(--cream-light);
+    }
+
     /* Footer */
     footer {
       text-align: center;
@@ -744,6 +810,7 @@
           <div class="brew-selected-recipe" id="brewRecipeLabel">Select a recipe from the table below</div>
         </div>
         <div class="brew-actions">
+          <button type="button" class="btn-favorite-recipe" id="btnToggleFavorite" title="Add selected recipe to favorites" disabled>♡ Favorite</button>
           <button type="button" class="btn-reset-brew" id="btnResetBrew" title="Reset all brew steps">Reset</button>
         </div>
       </div>
@@ -819,6 +886,27 @@
         </table>
       </div>
     </section>
+
+    <section class="table-section">
+      <h2>Favorite Recipes</h2>
+      <p class="table-hint">Save brews you like and add why they work for you</p>
+      <div id="favoritesEmptyState" class="favorites-empty">No favorites yet — select a recipe and tap ♡ Favorite.</div>
+      <div class="table-wrapper" id="favoritesTableWrapper" style="display:none;">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Ratio</th>
+              <th scope="col">Water (g)</th>
+              <th scope="col">Coffee (g)</th>
+              <th scope="col">Description</th>
+              <th scope="col">Remove</th>
+            </tr>
+          </thead>
+          <tbody id="favoritesTableBody">
+          </tbody>
+        </table>
+      </div>
+    </section>
   </main>
 
   <footer>
@@ -847,6 +935,10 @@
     const noRecipeNotice = document.getElementById('noRecipeNotice');
     const brewRecipeLabel = document.getElementById('brewRecipeLabel');
     const btnResetBrew = document.getElementById('btnResetBrew');
+    const btnToggleFavorite = document.getElementById('btnToggleFavorite');
+    const favoritesTableBody = document.getElementById('favoritesTableBody');
+    const favoritesTableWrapper = document.getElementById('favoritesTableWrapper');
+    const favoritesEmptyState = document.getElementById('favoritesEmptyState');
 
     // --- Brew state ---
     let selectedRecipe = null; // { water, coffee, bloom, pour1, pour2 }
@@ -855,9 +947,151 @@
     let stepStartTimes = []; // timestamps
     let stepRemaining = []; // remaining seconds (countdown)
     let wakeLock = null; // WakeLock sentinel to keep screen on during brew
+    let favoriteRecipes = {}; // key -> { water, coffee, ratio, description, createdAt }
 
     // Step durations in seconds: Bloom 45s, Pour 1 30s, Pour 2 30s, Drain 105s
     const STEP_DURATIONS = [45, 30, 30, 105];
+    const FAVORITES_KEY = 'favorite_recipes';
+
+    function getRecipeFavoriteKey(recipe) {
+      return `${recipe.water}-${recipe.coffee}`;
+    }
+
+    function isRecipeFavorited(recipe) {
+      if (!recipe) return false;
+      return !!favoriteRecipes[getRecipeFavoriteKey(recipe)];
+    }
+
+    function saveFavorites() {
+      try {
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(favoriteRecipes));
+      } catch (error) {
+        console.debug('Could not save favorites:', error);
+      }
+    }
+
+    function loadFavorites() {
+      try {
+        const stored = localStorage.getItem(FAVORITES_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && typeof parsed === 'object') {
+            favoriteRecipes = parsed;
+          }
+        }
+      } catch (error) {
+        favoriteRecipes = {};
+        console.debug('Could not load favorites:', error);
+      }
+    }
+
+    function renderFavoriteButton() {
+      if (!selectedRecipe) {
+        btnToggleFavorite.disabled = true;
+        btnToggleFavorite.classList.remove('active');
+        btnToggleFavorite.textContent = '♡ Favorite';
+        return;
+      }
+
+      const favorited = isRecipeFavorited(selectedRecipe);
+      btnToggleFavorite.disabled = false;
+      btnToggleFavorite.classList.toggle('active', favorited);
+      btnToggleFavorite.textContent = favorited ? '♥ Favorited' : '♡ Favorite';
+    }
+
+    function updateFavoriteDescription(key, description) {
+      if (!favoriteRecipes[key]) return;
+      favoriteRecipes[key].description = description;
+      saveFavorites();
+    }
+
+    function removeFavorite(key) {
+      if (!favoriteRecipes[key]) return;
+      delete favoriteRecipes[key];
+      saveFavorites();
+      renderFavoritesTable();
+      renderFavoriteButton();
+      generateTable(parseFloat(slider.value));
+    }
+
+    function renderFavoritesTable() {
+      favoritesTableBody.innerHTML = '';
+      const favorites = Object.entries(favoriteRecipes)
+        .map(([key, value]) => ({ key, ...value }))
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+      if (favorites.length === 0) {
+        favoritesTableWrapper.style.display = 'none';
+        favoritesEmptyState.style.display = '';
+        return;
+      }
+
+      favoritesEmptyState.style.display = 'none';
+      favoritesTableWrapper.style.display = '';
+
+      favorites.forEach((favorite) => {
+        const row = document.createElement('tr');
+
+        const ratioCell = document.createElement('td');
+        ratioCell.textContent = `1:${favorite.ratio}`;
+        row.appendChild(ratioCell);
+
+        const waterCell = document.createElement('td');
+        waterCell.textContent = `${favorite.water}g`;
+        row.appendChild(waterCell);
+
+        const coffeeCell = document.createElement('td');
+        coffeeCell.textContent = `${favorite.coffee}g`;
+        row.appendChild(coffeeCell);
+
+        const descriptionCell = document.createElement('td');
+        const descriptionInput = document.createElement('input');
+        descriptionInput.type = 'text';
+        descriptionInput.className = 'favorite-description-input';
+        descriptionInput.value = favorite.description || '';
+        descriptionInput.placeholder = 'Why this recipe works for you';
+        descriptionInput.setAttribute('aria-label', `Description for ${favorite.water}g water at ratio 1:${favorite.ratio}`);
+        descriptionInput.addEventListener('input', () => {
+          updateFavoriteDescription(favorite.key, descriptionInput.value);
+        });
+        descriptionCell.appendChild(descriptionInput);
+        row.appendChild(descriptionCell);
+
+        const removeCell = document.createElement('td');
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'favorite-remove-btn';
+        removeButton.textContent = 'Remove';
+        removeButton.setAttribute('aria-label', `Remove favorite recipe ${favorite.water} grams water`);
+        removeButton.addEventListener('click', () => removeFavorite(favorite.key));
+        removeCell.appendChild(removeButton);
+        row.appendChild(removeCell);
+
+        favoritesTableBody.appendChild(row);
+      });
+    }
+
+    function toggleFavoriteForSelectedRecipe() {
+      if (!selectedRecipe) return;
+
+      const key = getRecipeFavoriteKey(selectedRecipe);
+      if (favoriteRecipes[key]) {
+        delete favoriteRecipes[key];
+      } else {
+        favoriteRecipes[key] = {
+          water: selectedRecipe.water,
+          coffee: selectedRecipe.coffee,
+          ratio: parseFloat(slider.value).toFixed(1),
+          description: '',
+          createdAt: Date.now()
+        };
+      }
+
+      saveFavorites();
+      renderFavoriteButton();
+      renderFavoritesTable();
+      generateTable(parseFloat(slider.value));
+    }
 
     // --- Wake Lock API ---
     // Pending promise to serialize wake lock requests
@@ -957,13 +1191,18 @@
         const pour2 = water;
         const isHighlight = water === 250;
         const isSelected = selectedRecipe && selectedRecipe.water === water;
+        const recipeKey = `${water}-${coffee}`;
+        const isFavorite = !!favoriteRecipes[recipeKey];
 
         let classes = [];
         if (isHighlight) classes.push('highlight');
         if (isSelected) classes.push('selected');
+        if (isFavorite) classes.push('favorite');
+
+        const favoritePrefix = isFavorite ? '♥ ' : '';
 
         html += `<tr class="${classes.join(' ')}" data-water="${water}" data-coffee="${coffee}" data-bloom="${bloom}" data-pour1="${pour1}" data-pour2="${pour2}">
-          <td>${water}g</td>
+          <td>${favoritePrefix}${water}g</td>
           <td>${coffee}g</td>
           <td>${bloom}g</td>
           <td>${pour1}g</td>
@@ -998,6 +1237,7 @@
 
       // Update recipe label
       brewRecipeLabel.textContent = `Brewing ${water}g water / ${coffee}g coffee`;
+      renderFavoriteButton();
 
       // Update step details with recipe values
       document.getElementById('step0Detail').innerHTML = `Pour <strong>${bloom}g</strong> water<br>Wait 45s, swirl`;
@@ -1270,12 +1510,16 @@
         resetBrewState();
       }
     });
+    btnToggleFavorite.addEventListener('click', toggleFavoriteForSelectedRecipe);
 
     // --- Slider events ---
     slider.addEventListener('input', handleSliderInput);
     btnResetRatio.addEventListener('click', resetRatio);
 
     // --- Init ---
+    loadFavorites();
+    renderFavoriteButton();
+    renderFavoritesTable();
     handleSliderInput();
 
     // --- GitHub Star Count ---

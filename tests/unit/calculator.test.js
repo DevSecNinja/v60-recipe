@@ -260,6 +260,54 @@ describe('V60 Recipe Calculator — Core Logic', () => {
     });
   });
 
+  describe('Favorites', () => {
+    function selectRow(waterAmount) {
+      const rows = doc.querySelectorAll('#recipeTableBody tr');
+      const row = Array.from(rows).find(r => r.dataset.water === String(waterAmount));
+      row.click();
+      return row;
+    }
+
+    test('favorite button is disabled before selecting a recipe', () => {
+      const button = doc.getElementById('btnToggleFavorite');
+      expect(button.disabled).toBe(true);
+    });
+
+    test('selected recipe can be added to favorites', () => {
+      selectRow(400);
+      const button = doc.getElementById('btnToggleFavorite');
+      button.click();
+
+      const favoriteRows = doc.querySelectorAll('#favoritesTableBody tr');
+      expect(favoriteRows.length).toBe(1);
+      expect(button.textContent).toContain('Favorited');
+    });
+
+    test('favorite description is persisted to localStorage', () => {
+      selectRow(400);
+      doc.getElementById('btnToggleFavorite').click();
+
+      const descriptionInput = doc.querySelector('.favorite-description-input');
+      descriptionInput.value = 'Perfect for two cups';
+      descriptionInput.dispatchEvent(new dom.window.Event('input'));
+
+      const favorites = JSON.parse(dom.window.localStorage.getItem('favorite_recipes'));
+      const key = Object.keys(favorites)[0];
+      expect(favorites[key].description).toBe('Perfect for two cups');
+    });
+
+    test('clicking favorite again removes it', () => {
+      selectRow(400);
+      const button = doc.getElementById('btnToggleFavorite');
+      button.click();
+      button.click();
+
+      const favoriteRows = doc.querySelectorAll('#favoritesTableBody tr');
+      expect(favoriteRows.length).toBe(0);
+      expect(button.textContent).toContain('Favorite');
+    });
+  });
+
   describe('Brew step interactions', () => {
     function selectAndStartBrew(waterAmount) {
       const rows = doc.querySelectorAll('#recipeTableBody tr');
