@@ -1273,8 +1273,8 @@
       const targetRow = Array.from(rows).find(r => parseInt(r.dataset.water) === water);
       if (targetRow) {
         selectRecipe(targetRow);
-        // Scroll the brew steps into view
-        document.querySelector('.brew-steps').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Scroll all the way to the top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
 
@@ -1470,6 +1470,7 @@
           // Don't select recipe when clicking the favorite button
           if (e.target.closest('.btn-favorite')) return;
           selectRecipe(row);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         });
       });
 
