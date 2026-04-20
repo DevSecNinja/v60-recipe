@@ -153,7 +153,18 @@ Apple-specific meta tags ensure proper behavior when added to the home screen:
 
 ### Cache Versioning
 
-The cache name includes a version string (`v60-recipe-v1`). To bust the cache after a code change, increment the version in `sw.js`. The activate handler automatically deletes old caches.
+The cache name includes a version string (e.g. `v60-recipe-v1.16.0` for local
+development, `v60-recipe-sha-<short-sha>` in production). The value in
+`sw.js` (`const CACHE_NAME = 'v60-recipe-...'`) serves as a fallback for
+local use; the GitHub Pages deploy workflow automatically rewrites it to
+`v60-recipe-sha-${GITHUB_SHA::7}` at build time via a `sed` step in
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml). This means every
+push to `main` ships with a unique cache name, so the `activate` handler
+reliably deletes the previous cache and users always pick up the latest
+`index.html`/`sw.js` without needing a manual version bump.
+
+If you need to bust the cache during local development or in a non-Pages
+environment, bump the fallback version string in `sw.js` manually.
 
 ## Design Trade-offs
 

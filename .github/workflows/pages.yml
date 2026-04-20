@@ -59,6 +59,17 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
 
+      - name: Auto-update service worker cache version
+        # Replace the hard-coded CACHE_NAME version in sw.js with the commit SHA
+        # so every deployed version busts the cache automatically. This avoids
+        # having to remember to bump the version manually on each change.
+        run: |
+          set -euo pipefail
+          VERSION="sha-${GITHUB_SHA::7}"
+          echo "Setting service worker CACHE_NAME to v60-recipe-${VERSION}"
+          sed -i -E "s|const CACHE_NAME = 'v60-recipe-[^']+';|const CACHE_NAME = 'v60-recipe-${VERSION}';|" sw.js
+          grep "const CACHE_NAME" sw.js
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
