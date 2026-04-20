@@ -1398,6 +1398,12 @@
 
       // Reset brew state
       resetBrewState();
+
+      // Keep the screen on as soon as a brew is selected, so users don't lose
+      // their place between tapping a recipe and starting the first pour.
+      // Requested after resetBrewState() because that helper releases any
+      // previously-held wake lock from an earlier selection.
+      requestWakeLock();
     }
 
     // --- Brew step logic ---
@@ -1629,10 +1635,8 @@
           requestNotificationPermission();
         }
 
-        // Request wake lock on first step to keep screen on during brew
-        if (stepIndex === 0) {
-          requestWakeLock();
-        }
+        // Note: wake lock is already requested when the recipe is selected
+        // (see selectRecipe); we no longer request it here.
 
         // Start countdown
         stepStates[stepIndex] = 'running';
