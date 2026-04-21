@@ -5,10 +5,10 @@
   "description": "V60 Brew Guide",
   "scripts": {
     "test": "jest --verbose",
-    "test:unit": "jest --verbose --testPathPattern=tests/unit",
-    "test:html": "jest --verbose --testPathPattern=tests/html-validation",
-    "test:a11y": "jest --verbose --testPathPattern=tests/accessibility",
-    "test:pwa": "jest --verbose --testPathPattern=tests/pwa",
+    "test:unit": "jest --verbose --testPathPatterns=tests/unit",
+    "test:html": "jest --verbose --testPathPatterns=tests/html-validation",
+    "test:a11y": "jest --verbose --testPathPatterns=tests/accessibility",
+    "test:pwa": "jest --verbose --testPathPatterns=tests/pwa",
     "test:e2e": "playwright test"
   },
   "devDependencies": {
