@@ -27,7 +27,7 @@ const { test, expect } = require('@playwright/test');
 test.describe('Page load', () => {
   test('app title is correct', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveTitle(/V60 Recipe Calculator/i);
+    await expect(page).toHaveTitle(/V60 Brew Guide/i);
   });
 
   test('recipe table is visible and has rows', async ({ page }) => {

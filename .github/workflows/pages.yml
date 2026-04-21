@@ -76,6 +76,16 @@ jobs:
           sed -i -E "s|const CACHE_NAME = 'v60-recipe-[^']+';|const CACHE_NAME = 'v60-recipe-${VERSION}';|" sw.js
           grep "const CACHE_NAME" sw.js
 
+      - name: Auto-update sitemap lastmod date
+        # Replace the hard-coded lastmod date in sitemap.xml with today's date
+        # so search engines always see the actual deployment date.
+        run: |
+          set -euo pipefail
+          TODAY="$(date -u +%Y-%m-%d)"
+          echo "Setting sitemap lastmod to ${TODAY}"
+          sed -i -E "s|<lastmod>[0-9]{4}-[0-9]{2}-[0-9]{2}</lastmod>|<lastmod>${TODAY}</lastmod>|" sitemap.xml
+          grep "lastmod" sitemap.xml
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
