@@ -1,6 +1,6 @@
-# ☕ V60 Recipe Calculator
+# ☕ V60 Brew Guide
 
-A simple, static V60 pour-over coffee recipe calculator based on [James Hoffmann's Ultimate V60 Technique](https://www.youtube.com/watch?v=1oB1oDrDkHM).
+A simple, static V60 pour-over coffee brew guide based on [James Hoffmann's Ultimate V60 Technique](https://www.youtube.com/watch?v=1oB1oDrDkHM). It is a step-by-step guide, not just a number cruncher — pick a recipe, follow the timed pours, and adjust the ratio to taste.
 
 ## 🔗 Live Site
 

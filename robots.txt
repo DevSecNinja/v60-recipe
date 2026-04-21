@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://v60.ravensberg.org/sitemap.xml

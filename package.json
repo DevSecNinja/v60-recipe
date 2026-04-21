@@ -2,7 +2,7 @@
   "name": "v60-recipe",
   "version": "1.0.0",
   "private": true,
-  "description": "V60 Recipe Calculator",
+  "description": "V60 Brew Guide",
   "scripts": {
     "test": "jest --verbose",
     "test:unit": "jest --verbose --testPathPattern=tests/unit",

@@ -1,7 +1,7 @@
 {
-  "name": "V60 Recipe Calculator",
-  "short_name": "V60 Recipe",
-  "description": "James Hoffmann's V60 pour-over coffee recipe calculator with guided brew timer",
+  "name": "V60 Brew Guide",
+  "short_name": "V60 Brew",
+  "description": "Step-by-step V60 pour-over brew guide with adjustable ratios and a guided brew timer, based on James Hoffmann's ultimate technique.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
