@@ -60,12 +60,22 @@ jobs:
           sed -i -E 's|(<span class="commit-sha" id="commitSha">)dev(</span>)|\1'"${SHORT_SHA}"'\2|' index.html
           grep 'id="commitSha"' index.html
 
+      - name: Ensure Cloudflare Pages project exists
+        uses: cloudflare/wrangler-action@v3
+        continue-on-error: true
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '3'
+          command: pages project create v60-recipe --production-branch main
+
       - name: Deploy to Cloudflare Pages
         id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '3'
           command: >
             pages deploy .
             --project-name=v60-recipe
@@ -116,6 +126,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '3'
           command: >
             pages deployment delete
             --project-name=v60-recipe
