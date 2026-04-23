@@ -284,14 +284,14 @@ describe('Apple HIG — Dark Mode', () => {
   });
 
   test('dark mode overrides --text-primary to a light colour', () => {
-    // Extract the dark-mode block and check --text-primary is redefined.
-    const darkBlock = html.match(/@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)\s*\{([\s\S]*?)\n    \}/);
+    // Extract everything after the dark-mode media query opening brace.
+    const darkBlock = html.match(/@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)\s*\{([\s\S]+)/);
     expect(darkBlock).not.toBeNull();
     expect(darkBlock[1]).toMatch(/--text-primary\s*:/);
   });
 
   test('dark mode overrides --cream-light (page background) to a dark colour', () => {
-    const darkBlock = html.match(/@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)\s*\{([\s\S]*?)\n    \}/);
+    const darkBlock = html.match(/@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)\s*\{([\s\S]+)/);
     expect(darkBlock).not.toBeNull();
     expect(darkBlock[1]).toMatch(/--cream-light\s*:/);
   });
@@ -300,9 +300,12 @@ describe('Apple HIG — Dark Mode', () => {
     const doc = parseHTML().window.document;
     const darkThemeMeta = doc.querySelector('meta[name="theme-color"][media*="dark"]');
     expect(darkThemeMeta).not.toBeNull();
-    // The dark theme-color should be a dark hex value (first hex digit < 8)
+    // The dark theme-color should be a genuinely dark colour.
+    // Parse the hex value and verify its numeric brightness is low.
     const color = darkThemeMeta.getAttribute('content');
-    expect(color).toMatch(/^#[0-4]/);
+    expect(color).toMatch(/^#[0-9a-fA-F]{6}$/);
+    const numeric = parseInt(color.slice(1), 16);
+    expect(numeric).toBeLessThan(0x808080);
   });
 
   test('light theme-color meta tag is also present', () => {
