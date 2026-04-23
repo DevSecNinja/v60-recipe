@@ -475,6 +475,32 @@
       color: var(--green-text);
     }
 
+    .btn-brew-again {
+      display: none;
+      margin-top: 1rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      border: 1.5px solid var(--accent);
+      background: var(--accent);
+      color: var(--white);
+      cursor: pointer;
+      transition: all 0.15s;
+      opacity: 0;
+    }
+
+    .btn-brew-again.visible {
+      display: inline-block;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    .btn-brew-again:hover {
+      background: var(--espresso);
+      border-color: var(--espresso);
+    }
+
     /* No recipe selected prompt */
     .no-recipe-notice {
       text-align: center;
@@ -1332,6 +1358,7 @@
       <div class="brew-complete" id="brewComplete">
         <div class="brew-complete-icon">☕</div>
         <div class="brew-complete-text">Enjoy your brew</div>
+        <button type="button" class="btn-brew-again" id="btnBrewAgain">Brew another one</button>
       </div>
     </section>
 
@@ -1510,6 +1537,8 @@
     // --- Constants ---
     const DEFAULT_RATIO = 16.7;
     const STEP_COUNT = 6;
+    const BREW_AGAIN_DELAY_MS = 3000;     // Show "brew another one" button after 3s
+    const WAKE_LOCK_RELEASE_DELAY_MS = 10000; // Release wake lock 10s after brew completes
 
     // --- DOM refs ---
     const slider = document.getElementById('ratioSlider');
@@ -1719,6 +1748,38 @@
       }
     }
 
+    // --- Last Brew Persistence ---
+    const LAST_BREW_KEY = 'v60_last_brew';
+
+    function saveLastBrew(recipe, ratio) {
+      try {
+        localStorage.setItem(LAST_BREW_KEY, JSON.stringify({
+          recipe: recipe,
+          ratio: ratio,
+          completedAt: Date.now()
+        }));
+      } catch (e) {
+        // Silently fail if localStorage is not available
+      }
+    }
+
+    function loadLastBrew() {
+      try {
+        const data = localStorage.getItem(LAST_BREW_KEY);
+        return data ? JSON.parse(data) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function clearLastBrew() {
+      try {
+        localStorage.removeItem(LAST_BREW_KEY);
+      } catch (e) {
+        // Silently fail
+      }
+    }
+
     // --- Brew state ---
     let selectedRecipe = null; // { water, coffee, bloom, pour1, pour2, pour3, pour4 }
     let stepStates = []; // 'locked' | 'available' | 'running' | 'completed'
@@ -1726,6 +1787,7 @@
     let stepStartTimes = []; // timestamps
     let stepRemaining = []; // remaining seconds (countdown)
     let wakeLock = null; // WakeLock sentinel to keep screen on during brew
+    let brewCompleteTimers = []; // timers for post-brew-complete actions
 
     // Step durations in seconds: Bloom 45s, Pour 1 25s, Pour 2 20s, Pour 3 20s, Pour 4 15s, Drain 55s
     const STEP_DURATIONS = [45, 25, 20, 20, 15, 55];
@@ -1981,6 +2043,9 @@
       stepRemaining = STEP_DURATIONS.slice(); // copy durations as initial countdown
       stepStates = new Array(STEP_COUNT).fill('locked');
 
+      // Clear any pending brew-complete timers
+      clearBrewCompleteTimers();
+
       // Release wake lock when brew is reset
       releaseWakeLock();
 
@@ -1993,6 +2058,7 @@
       stepsGrid.classList.remove('fade-out');
       stepsGrid.style.display = '';
       document.getElementById('brewComplete').classList.remove('show');
+      document.getElementById('btnBrewAgain').classList.remove('visible');
 
       renderSteps();
     }
@@ -2206,9 +2272,30 @@
         stepsGrid.style.display = 'none';
       }, { once: true });
       document.getElementById('brewComplete').classList.add('show');
-      
-      // Release wake lock when brew is complete
-      releaseWakeLock();
+
+      // Hide the "brew another one" button initially
+      const btnBrewAgain = document.getElementById('btnBrewAgain');
+      btnBrewAgain.classList.remove('visible');
+
+      // Persist last brew to localStorage
+      if (selectedRecipe) {
+        saveLastBrew(selectedRecipe, parseFloat(slider.value));
+      }
+
+      // Show "brew another one" button after delay
+      brewCompleteTimers.push(setTimeout(() => {
+        btnBrewAgain.classList.add('visible');
+      }, BREW_AGAIN_DELAY_MS));
+
+      // Release wake lock after delay
+      brewCompleteTimers.push(setTimeout(() => {
+        releaseWakeLock();
+      }, WAKE_LOCK_RELEASE_DELAY_MS));
+    }
+
+    function clearBrewCompleteTimers() {
+      brewCompleteTimers.forEach(t => clearTimeout(t));
+      brewCompleteTimers = [];
     }
 
     function handleStepClick(stepIndex) {
@@ -2252,6 +2339,15 @@
     btnResetBrew.addEventListener('click', () => {
       if (selectedRecipe) {
         resetBrewState();
+      }
+    });
+
+    // Brew another one button
+    document.getElementById('btnBrewAgain').addEventListener('click', () => {
+      if (selectedRecipe) {
+        resetBrewState();
+        requestWakeLock();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
 
@@ -2301,6 +2397,24 @@
     // --- Init ---
     applyUrlParams();
     renderFavorites();
+
+    // Restore last brew from localStorage (only if URL params didn't already select a recipe)
+    if (!selectedRecipe) {
+      const lastBrew = loadLastBrew();
+      if (lastBrew && lastBrew.recipe) {
+        // Set the slider to the saved ratio
+        if (lastBrew.ratio !== undefined) {
+          slider.value = lastBrew.ratio;
+          handleSliderInput();
+        }
+        // Find and select the matching row
+        const rows = tableBody.querySelectorAll('tr');
+        const targetRow = Array.from(rows).find(r => parseInt(r.dataset.water, 10) === lastBrew.recipe.water);
+        if (targetRow) {
+          selectRecipe(targetRow);
+        }
+      }
+    }
 
     // --- GitHub Star Count ---
     // Note: Functions are kept in global scope for testing purposes
