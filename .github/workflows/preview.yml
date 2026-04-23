@@ -3,6 +3,13 @@ name: PR Preview
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.github/**'
+      - '.devcontainer/**'
+      - '.vscode/**'
+      - 'renovate.json5'
 
 concurrency:
   group: preview-${{ github.event.pull_request.number }}
@@ -12,7 +19,9 @@ jobs:
   deploy_preview:
     if: |
       github.event.action != 'closed' &&
-      github.event.pull_request.head.repo.full_name == github.repository
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'renovate[bot]' &&
+      github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -93,7 +102,9 @@ jobs:
   close_preview:
     if: |
       github.event.action == 'closed' &&
-      github.event.pull_request.head.repo.full_name == github.repository
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'renovate[bot]' &&
+      github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
