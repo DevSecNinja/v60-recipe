@@ -2417,7 +2417,7 @@
       const steamEls = document.querySelectorAll('#brewCompleteIcon .steam');
       steamEls.forEach(el => {
         el.style.animation = 'none';
-        // Force reflow so the browser recognises the reset
+        // Force reflow so the browser recognizes the reset
         void el.offsetWidth;
         el.style.animation = '';
       });
