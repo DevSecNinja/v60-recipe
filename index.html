@@ -469,7 +469,6 @@
       margin-bottom: 0.5rem;
       position: relative;
       display: inline-block;
-      cursor: pointer;
     }
 
     .brew-complete-icon .steam-container {
@@ -1274,6 +1273,10 @@
         --favorite-bg: #3B1515;
         --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
+      }
+
+      a {
+        color: var(--accent);
       }
 
       header {
@@ -2410,17 +2413,6 @@
         requestWakeLock();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
-    });
-
-    // Restart steam animation on cup click
-    document.getElementById('brewCompleteIcon').addEventListener('click', () => {
-      const steamEls = document.querySelectorAll('#brewCompleteIcon .steam');
-      steamEls.forEach(el => {
-        el.style.animation = 'none';
-        // Force reflow so the browser recognizes the reset
-        void el.offsetWidth;
-        el.style.animation = '';
-      });
     });
 
     // --- Slider events ---
