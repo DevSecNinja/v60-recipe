@@ -467,6 +467,63 @@
     .brew-complete .brew-complete-icon {
       font-size: 3rem;
       margin-bottom: 0.5rem;
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    .brew-complete-icon .steam-container {
+      position: absolute;
+      top: -1.2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2rem;
+      height: 2rem;
+      pointer-events: none;
+    }
+
+    .brew-complete-icon .steam {
+      position: absolute;
+      bottom: 0;
+      width: 0.35rem;
+      height: 0.35rem;
+      background: var(--light-accent);
+      border-radius: 50%;
+      opacity: 0;
+      animation: steam-rise 2s ease-out infinite;
+    }
+
+    .brew-complete-icon .steam:nth-child(1) {
+      left: 25%;
+      animation-delay: 0s;
+    }
+
+    .brew-complete-icon .steam:nth-child(2) {
+      left: 50%;
+      animation-delay: 0.5s;
+    }
+
+    .brew-complete-icon .steam:nth-child(3) {
+      left: 75%;
+      animation-delay: 1s;
+    }
+
+    @keyframes steam-rise {
+      0% {
+        opacity: 0;
+        transform: translateY(0) scaleX(1);
+      }
+      15% {
+        opacity: 0.6;
+      }
+      50% {
+        opacity: 0.3;
+        transform: translateY(-1rem) scaleX(1.5);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-2rem) scaleX(2);
+      }
     }
 
     .brew-complete .brew-complete-text {
@@ -1356,7 +1413,14 @@
         </div>
       </div>
       <div class="brew-complete" id="brewComplete">
-        <div class="brew-complete-icon">☕</div>
+        <div class="brew-complete-icon" id="brewCompleteIcon" role="img" aria-label="Coffee cup with steam">
+          <div class="steam-container">
+            <div class="steam"></div>
+            <div class="steam"></div>
+            <div class="steam"></div>
+          </div>
+          ☕
+        </div>
         <div class="brew-complete-text">Enjoy your brew</div>
         <button type="button" class="btn-brew-again" id="btnBrewAgain">Brew another one</button>
       </div>
@@ -2346,6 +2410,17 @@
         requestWakeLock();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
+    });
+
+    // Restart steam animation on cup click
+    document.getElementById('brewCompleteIcon').addEventListener('click', () => {
+      const steamEls = document.querySelectorAll('#brewCompleteIcon .steam');
+      steamEls.forEach(el => {
+        el.style.animation = 'none';
+        // Force reflow so the browser recognises the reset
+        void el.offsetWidth;
+        el.style.animation = '';
+      });
     });
 
     // --- Slider events ---
