@@ -44,7 +44,7 @@ describe('GitHub Star Feature', () => {
       const githubStarButton = doc.getElementById('githubStarButton');
       expect(githubStarButton).not.toBeNull();
       expect(githubStarButton.tagName).toBe('A');
-      expect(githubStarButton.href).toContain('github.com/DevSecNinja/v60-recipe');
+      expect(githubStarButton.href).toContain('github.com/DevSecNinja/v60-brew-guide');
       expect(githubStarButton.target).toBe('_blank');
       expect(githubStarButton.rel).toBe('noopener');
     });

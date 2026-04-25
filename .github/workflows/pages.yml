@@ -76,8 +76,8 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="sha-${GITHUB_SHA::7}"
-          echo "Setting service worker CACHE_NAME to v60-recipe-${VERSION}"
-          sed -i -E "s|const CACHE_NAME = 'v60-recipe-[^']+';|const CACHE_NAME = 'v60-recipe-${VERSION}';|" sw.js
+          echo "Setting service worker CACHE_NAME to v60-brew-guide-${VERSION}"
+          sed -i -E "s|const CACHE_NAME = 'v60-brew-guide-[^']+';|const CACHE_NAME = 'v60-brew-guide-${VERSION}';|" sw.js
           grep "const CACHE_NAME" sw.js
 
       - name: Auto-update footer commit SHA
