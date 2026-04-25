@@ -227,11 +227,11 @@ uses the `iPhone 14` device preset and spins up a local static-file server
 
 ### Cache Versioning
 
-The cache name includes a version string (e.g. `v60-recipe-v1.16.0` for local
-development, `v60-recipe-sha-<short-sha>` in production). The value in
-`sw.js` (`const CACHE_NAME = 'v60-recipe-...'`) serves as a fallback for
+The cache name includes a version string (e.g. `v60-brew-guide-v1.16.0` for local
+development, `v60-brew-guide-sha-<short-sha>` in production). The value in
+`sw.js` (`const CACHE_NAME = 'v60-brew-guide-...'`) serves as a fallback for
 local use; the GitHub Pages deploy workflow automatically rewrites it to
-`v60-recipe-sha-${GITHUB_SHA::7}` at build time via a `sed` step in
+`v60-brew-guide-sha-${GITHUB_SHA::7}` at build time via a `sed` step in
 [`.github/workflows/pages.yml`](.github/workflows/pages.yml). This means every
 push to `main` ships with a unique cache name, so the `activate` handler
 reliably deletes the previous cache and users always pick up the latest
