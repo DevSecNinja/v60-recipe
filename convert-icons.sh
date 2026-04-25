@@ -29,28 +29,28 @@ if ! command -v convert &> /dev/null; then
     fi
 fi
 
+# Check if librsvg is installed for consistent SVG rendering
+if ! command -v rsvg-convert &> /dev/null; then
+    echo -e "${YELLOW}librsvg not found. Installing...${NC}"
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        sudo apt-get update && sudo apt-get install -y librsvg2-bin
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        brew install librsvg
+    else
+        echo "Please install librsvg manually: https://wiki.gnome.org/Projects/LibRsvg"
+        exit 1
+    fi
+fi
+
 # Source directory and files
 ICON_DIR="icons"
-SOURCE_DARK="$ICON_DIR/V60-iOS-Dark-1024x1024@1x.png"
-SOURCE_DEFAULT="$ICON_DIR/V60-iOS-Default-1024x1024@1x.png"
-SOURCE_LOGO="$ICON_DIR/V60.icon/Assets/logo-transparent.png"
+SOURCE_SVG="$ICON_DIR/icon-source.svg"
 
-# Determine which source image to use (prefer default version)
-if [ -f "$SOURCE_DEFAULT" ]; then
-    SOURCE_IMAGE="$SOURCE_DEFAULT"
-    echo -e "${GREEN}✓${NC} Using default theme logo: $SOURCE_DEFAULT"
-elif [ -f "$SOURCE_DARK" ]; then
-    SOURCE_IMAGE="$SOURCE_DARK"
-    echo -e "${GREEN}✓${NC} Using dark theme logo: $SOURCE_DARK"
-elif [ -f "$SOURCE_LOGO" ]; then
-    SOURCE_IMAGE="$SOURCE_LOGO"
-    echo -e "${GREEN}✓${NC} Using logo from icon.json: $SOURCE_LOGO"
+# Determine source icon
+if [ -f "$SOURCE_SVG" ]; then
+    echo -e "${GREEN}✓${NC} Using SVG source: $SOURCE_SVG"
 else
-    echo -e "${YELLOW}Error: No source logo found!${NC}"
-    echo "Please ensure one of these files exists:"
-    echo "  - $SOURCE_DARK"
-    echo "  - $SOURCE_DEFAULT"
-    echo "  - $SOURCE_LOGO"
+    echo -e "${YELLOW}Error: Source icon not found: $SOURCE_SVG${NC}"
     exit 1
 fi
 
@@ -68,21 +68,24 @@ convert_icon() {
     local purpose=$3
 
     if [ "$purpose" == "maskable" ]; then
-        # For maskable icons, add 20% padding (safe zone)
+        # For maskable icons, add 20% padding (safe zone) while preserving
+        # the solid icon background.
         local padded_size=$((size * 80 / 100))
-        convert "$SOURCE_IMAGE" \
+        local temp_icon
+        temp_icon=$(mktemp "/tmp/v60-icon-${size}.XXXXXX.png")
+
+        rsvg-convert -w "$size" -h "$size" "$SOURCE_SVG" -o "$temp_icon"
+        convert "$temp_icon" \
             -resize "${padded_size}x${padded_size}" \
+            -background "#3E2723" \
             -gravity center \
             -extent "${size}x${size}" \
-            -background none \
             -quality 95 \
             "$output"
+        rm -f "$temp_icon"
     else
         # Standard icons
-        convert "$SOURCE_IMAGE" \
-            -resize "${size}x${size}" \
-            -quality 95 \
-            "$output"
+        rsvg-convert -w "$size" -h "$size" "$SOURCE_SVG" -o "$output"
     fi
 
     echo -e "${GREEN}✓${NC} Created: $output (${size}x${size})"
@@ -97,10 +100,7 @@ convert_icon 192 "$ICON_DIR/icon-maskable-192.png" "maskable"
 convert_icon 512 "$ICON_DIR/icon-maskable-512.png" "maskable"
 
 # Generate Apple Touch Icon (180x180)
-convert "$SOURCE_IMAGE" \
-    -resize 180x180 \
-    -quality 95 \
-    "$ICON_DIR/apple-touch-icon.png"
+rsvg-convert -w 180 -h 180 "$SOURCE_SVG" -o "$ICON_DIR/apple-touch-icon.png"
 echo -e "${GREEN}✓${NC} Created: $ICON_DIR/apple-touch-icon.png (180x180)"
 
 # Generate Favicon (32x32 and 16x16 in ICO format)
@@ -108,8 +108,8 @@ echo ""
 echo -e "${BLUE}Generating multi-resolution favicon.ico...${NC}"
 
 # Create temporary PNG files for favicon
-convert "$SOURCE_IMAGE" -resize 32x32 -quality 95 /tmp/favicon-32.png
-convert "$SOURCE_IMAGE" -resize 16x16 -quality 95 /tmp/favicon-16.png
+rsvg-convert -w 32 -h 32 "$SOURCE_SVG" -o /tmp/favicon-32.png
+rsvg-convert -w 16 -h 16 "$SOURCE_SVG" -o /tmp/favicon-16.png
 
 # Combine into ICO file
 convert /tmp/favicon-32.png /tmp/favicon-16.png "$ICON_DIR/favicon.ico"
