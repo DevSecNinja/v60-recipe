@@ -1153,21 +1153,52 @@
       color: var(--favorite-color);
     }
 
+    .btn-edit-favorite {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 0.2rem 0.4rem;
+      color: var(--light-accent);
+      transition: color 0.15s;
+      line-height: 1;
+    }
+
+    .btn-edit-favorite:hover {
+      color: var(--accent);
+    }
+
+    .btn-move-favorite {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 0.2rem 0.3rem;
+      color: var(--light-accent);
+      transition: color 0.15s;
+      line-height: 1;
+    }
+
+    .btn-move-favorite:hover {
+      color: var(--accent);
+    }
+
+    .btn-move-favorite:disabled {
+      opacity: 0.25;
+      cursor: default;
+    }
+
     .favorite-card-description {
-      margin-top: 0.5rem;
+      margin-top: 0.4rem;
+      padding-top: 0.3rem;
+      border-top: 1px solid var(--cream);
     }
 
     .favorite-description-text {
       font-size: 0.8rem;
       color: var(--text-secondary);
       font-style: italic;
-      cursor: text;
-      padding: 0.25rem 0;
-    }
-
-    .favorite-description-text:empty::before {
-      content: 'Click to add a note…';
-      color: var(--light-accent);
+      display: block;
     }
 
     .favorite-description-input {
@@ -1269,7 +1300,9 @@
     }
 
     .btn-favorite,
-    .btn-remove-favorite {
+    .btn-remove-favorite,
+    .btn-edit-favorite,
+    .btn-move-favorite {
       min-height: 44px;
       min-width: 44px;
       display: inline-flex;
@@ -1566,7 +1599,7 @@
 
     <section class="favorites-section" id="favoritesSection" style="display:none;">
       <h2><span aria-hidden="true">❤️</span> My Favorites</h2>
-      <p class="favorites-hint">Your saved recipes — tap to brew, click the note to add a description</p>
+      <p class="favorites-hint">Your saved recipes — tap to brew, use ✏ to add or edit a note, use ↑↓ to reorder</p>
       <div id="favoritesList" class="favorites-list"></div>
     </section>
 
@@ -1811,6 +1844,17 @@
       }
     }
 
+    function moveFavorite(key, direction) {
+      const favorites = loadFavorites();
+      const index = favorites.findIndex(f => f.key === key);
+      if (index < 0) return;
+      const newIndex = direction === 'up' ? index - 1 : index + 1;
+      if (newIndex < 0 || newIndex >= favorites.length) return;
+      [favorites[index], favorites[newIndex]] = [favorites[newIndex], favorites[index]];
+      saveFavorites(favorites);
+      renderFavorites();
+    }
+
     function renderFavorites() {
       const favorites = loadFavorites();
       if (favorites.length === 0) {
@@ -1821,10 +1865,12 @@
       favoritesSection.style.display = '';
       let html = '';
 
-      favorites.forEach(fav => {
+      favorites.forEach((fav, idx) => {
         const isSelected = selectedRecipe && selectedRecipe.water === fav.water &&
           parseFloat(slider.value).toFixed(1) === parseFloat(fav.ratio).toFixed(1);
-        const descriptionHtml = `<span class="favorite-description-text" data-key="${fav.key}">${fav.description || ''}</span>`;
+        const descriptionHtml = fav.description
+          ? `<div class="favorite-card-description"><span class="favorite-description-text" data-key="${fav.key}">${fav.description}</span></div>`
+          : '';
 
         html += `<div class="favorite-card${isSelected ? ' selected' : ''}" data-fav-key="${fav.key}" data-fav-ratio="${fav.ratio}" data-fav-water="${fav.water}" data-fav-coffee="${fav.coffee}" data-fav-bloom="${fav.bloom}" data-fav-pour1="${fav.pour1}" data-fav-pour2="${fav.pour2}" data-fav-pour3="${fav.pour3}" data-fav-pour4="${fav.pour4}">
           <div class="favorite-card-header">
@@ -1833,11 +1879,13 @@
               <span class="favorite-card-ratio">1:${parseFloat(fav.ratio).toFixed(1)}</span>
             </div>
             <div class="favorite-card-actions">
+              <button type="button" class="btn-move-favorite" data-key="${fav.key}" data-direction="up" aria-label="Move up" title="Move up"${idx === 0 ? ' disabled' : ''}>↑</button>
+              <button type="button" class="btn-move-favorite" data-key="${fav.key}" data-direction="down" aria-label="Move down" title="Move down"${idx === favorites.length - 1 ? ' disabled' : ''}>↓</button>
+              <button type="button" class="btn-edit-favorite" data-key="${fav.key}" aria-label="Edit note" title="Edit note">✏</button>
               <button type="button" class="btn-remove-favorite" data-key="${fav.key}" aria-label="Remove favorite" title="Remove favorite">✕</button>
             </div>
           </div>
-          <div class="favorite-card-description">${descriptionHtml}</div>
-        </div>`;
+          ${descriptionHtml}</div>`;
       });
 
       favoritesList.innerHTML = html;
@@ -1845,8 +1893,10 @@
       // Attach card click handlers (select recipe)
       favoritesList.querySelectorAll('.favorite-card').forEach(card => {
         card.addEventListener('click', (e) => {
-          // Don't trigger if clicking description text, input, or remove button
-          if (e.target.closest('.btn-remove-favorite') || e.target.closest('.favorite-description-text') || e.target.closest('.favorite-description-input')) return;
+          if (e.target.closest('.btn-remove-favorite') ||
+              e.target.closest('.btn-edit-favorite') ||
+              e.target.closest('.btn-move-favorite') ||
+              e.target.closest('.favorite-description-input')) return;
           selectFavoriteRecipe(card);
         });
       });
@@ -1859,18 +1909,35 @@
         });
       });
 
-      // Attach description click-to-edit handlers
-      favoritesList.querySelectorAll('.favorite-description-text').forEach(span => {
-        span.addEventListener('click', (e) => {
+      // Attach edit handlers
+      favoritesList.querySelectorAll('.btn-edit-favorite').forEach(btn => {
+        btn.addEventListener('click', (e) => {
           e.stopPropagation();
-          startEditDescription(span);
+          const card = btn.closest('.favorite-card');
+          startEditDescription(btn.dataset.key, card);
+        });
+      });
+
+      // Attach move handlers
+      favoritesList.querySelectorAll('.btn-move-favorite').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          moveFavorite(btn.dataset.key, btn.dataset.direction);
         });
       });
     }
 
-    function startEditDescription(span) {
-      const key = span.dataset.key;
-      const currentText = span.textContent || '';
+    function startEditDescription(key, card) {
+      const currentFav = loadFavorites().find(f => f.key === key);
+      const currentText = currentFav ? (currentFav.description || '') : '';
+
+      let descDiv = card.querySelector('.favorite-card-description');
+      if (!descDiv) {
+        descDiv = document.createElement('div');
+        descDiv.className = 'favorite-card-description';
+        card.appendChild(descDiv);
+      }
+
       const input = document.createElement('input');
       input.type = 'text';
       input.className = 'favorite-description-input';
@@ -1878,21 +1945,18 @@
       input.placeholder = 'Add a note…';
       input.maxLength = 200;
 
-      span.replaceWith(input);
+      descDiv.innerHTML = '';
+      descDiv.appendChild(input);
       input.focus();
 
       function finishEdit() {
         const newDescription = input.value.trim();
         updateFavoriteDescription(key, newDescription);
-        const newSpan = document.createElement('span');
-        newSpan.className = 'favorite-description-text';
-        newSpan.dataset.key = key;
-        newSpan.textContent = newDescription;
-        input.replaceWith(newSpan);
-        newSpan.addEventListener('click', (e) => {
-          e.stopPropagation();
-          startEditDescription(newSpan);
-        });
+        if (newDescription) {
+          descDiv.innerHTML = `<span class="favorite-description-text" data-key="${key}">${newDescription}</span>`;
+        } else {
+          descDiv.remove();
+        }
       }
 
       input.addEventListener('blur', finishEdit);
@@ -2210,6 +2274,9 @@
       // Show the share button now that a recipe is selected, and sync URL
       if (btnShareRecipe) btnShareRecipe.hidden = false;
       updateShareUrl();
+
+      // Sync favorites selection highlight
+      renderFavorites();
     }
 
     // --- Brew step logic ---
