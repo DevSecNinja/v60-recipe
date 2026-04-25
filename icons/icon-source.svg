@@ -3,24 +3,27 @@
   <!-- Background -->
   <rect width="512" height="512" fill="#3E2723"/>
   <!--
-    V60 side profile with handle, scaled to fill ~75% of icon area.
-    Original viewBox: 0 0 56 52
-    Scale factor: min(512*0.75/56, 512*0.75/52) = min(6.86, 7.38) = 6.86
-    Rendered size: 56*6.86=384 wide, 52*6.86=357 tall
-    Offset: x=(512-384)/2=64, y=(512-357)/2=77
+    V60 (3/4 view with handle), scaled to ~75% of icon area.
+    Original viewBox: 0 0 60 56
+    scale = min(512*0.75/60, 512*0.75/56) = min(6.4, 6.857) = 6.4
+    Rendered: 60*6.4=384 wide, 56*6.4=358 tall
+    Offset: x=(512-384)/2=64, y=(512-358)/2=77
   -->
-  <g transform="translate(64, 77) scale(6.857)">
-    <!-- Top rim -->
-    <rect x="2" y="2" width="42" height="6" rx="3" stroke="#EFEBE9" stroke-width="2.5" fill="none"/>
+  <g transform="translate(64, 77) scale(6.4)" fill="none">
+    <!-- Top rim ellipse -->
+    <ellipse cx="26" cy="9" rx="22" ry="4.5" stroke="#EFEBE9" stroke-width="2.2"/>
     <!-- Cone body -->
-    <path d="M5 8 L22 46 L24 46 L41 8 Z" stroke="#EFEBE9" stroke-width="2.5" stroke-linejoin="round" fill="none"/>
-    <!-- Spiral ribs inside cone -->
-    <path d="M11 16 Q23 13.5 35 16" stroke="#EFEBE9" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.65" fill="none"/>
-    <path d="M14 24 Q23 21.5 32 24" stroke="#EFEBE9" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.5" fill="none"/>
-    <path d="M17 32 Q23 29.5 29 32" stroke="#EFEBE9" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.35" fill="none"/>
-    <!-- Handle (right side ear) -->
-    <path d="M41 14 Q53 19 53 24 Q53 29 41 34" stroke="#EFEBE9" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-    <!-- Bottom drain hole -->
-    <circle cx="23" cy="48" r="2.5" fill="#EFEBE9"/>
+    <path d="M4 9 L26 51 L48 9" stroke="#EFEBE9" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+    <!-- Spiral ribs -->
+    <path d="M9 10 L26 51" stroke="#EFEBE9" stroke-width="1.1" stroke-linecap="round" stroke-opacity="0.55"/>
+    <path d="M14.5 10.8 L26 51" stroke="#EFEBE9" stroke-width="1.1" stroke-linecap="round" stroke-opacity="0.55"/>
+    <path d="M20 11.3 L26 51" stroke="#EFEBE9" stroke-width="1.1" stroke-linecap="round" stroke-opacity="0.55"/>
+    <path d="M32 11.3 L26 51" stroke="#EFEBE9" stroke-width="1.1" stroke-linecap="round" stroke-opacity="0.55"/>
+    <path d="M37.5 10.8 L26 51" stroke="#EFEBE9" stroke-width="1.1" stroke-linecap="round" stroke-opacity="0.55"/>
+    <path d="M43 10 L26 51" stroke="#EFEBE9" stroke-width="1.1" stroke-linecap="round" stroke-opacity="0.55"/>
+    <!-- Side handle -->
+    <path d="M48 12 Q57 16 57 22 Q57 28 48 31" stroke="#EFEBE9" stroke-width="2.2" stroke-linecap="round"/>
+    <!-- Drain hole -->
+    <ellipse cx="26" cy="51.5" rx="2.2" ry="0.9" fill="#EFEBE9"/>
   </g>
 </svg>
