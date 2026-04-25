@@ -31,7 +31,7 @@ if ! command -v convert &> /dev/null; then
     fi
 fi
 
-# Check if librsvg is installed for consistent SVG rendering
+# Check if librsvg is installed for high-quality SVG rendering
 if ! command -v rsvg-convert &> /dev/null; then
     echo -e "${YELLOW}librsvg not found. Installing...${NC}"
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -76,7 +76,7 @@ convert_icon() {
         local padded_size=$((size * 80 / 100))
         local temp_icon
         temp_icon=$(mktemp) || {
-            echo -e "${YELLOW}Error: Failed to create temporary icon file${NC}"
+            echo -e "${YELLOW}Error: Failed to create temporary file${NC}"
             exit 1
         }
 
