@@ -148,32 +148,119 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
       window.requestWakeLock = originalRequestWakeLock;
     });
 
-    test('requestWakeLock is NOT called when subsequent steps start', () => {
+    test('requestWakeLock is called when step 0 starts (failsafe for preselected brew)', () => {
       const originalRequestWakeLock = window.requestWakeLock;
       let wakeLockCallCount = 0;
 
-      // Select the recipe first (this itself triggers one wake lock request),
-      // then reset the counter so we only measure calls made from step clicks.
+      // Select the recipe (triggers one wake lock request), then intercept
+      // further calls to count only those coming from step interactions.
       selectRow(250);
       window.requestWakeLock = () => {
         wakeLockCallCount++;
         return Promise.resolve(false);
       };
 
-      // Start and complete first step
+      // Tapping step 0 should re-request the wake lock as a failsafe in case
+      // the lock was lost while the page was hidden before brewing started.
       const step0 = doc.getElementById('step0');
-      step0.click(); // start (should NOT call requestWakeLock — already held)
-      step0.click(); // complete
+      step0.click(); // start step 0
 
-      // Start second step
+      expect(wakeLockCallCount).toBe(1);
+
+      // Restore
+      window.requestWakeLock = originalRequestWakeLock;
+    });
+
+    test('requestWakeLock is NOT called when subsequent steps start', () => {
+      const originalRequestWakeLock = window.requestWakeLock;
+      let wakeLockCallCount = 0;
+
+      // Select the recipe first (this itself triggers one wake lock request),
+      // then start step 0 (also calls requestWakeLock as a failsafe — see above),
+      // then reset the counter so we only measure calls from steps 1+.
+      selectRow(250);
+      const step0 = doc.getElementById('step0');
+      step0.click(); // start step 0 (calls requestWakeLock once)
+      step0.click(); // complete step 0 → step 1 auto-starts
+
+      window.requestWakeLock = () => {
+        wakeLockCallCount++;
+        return Promise.resolve(false);
+      };
+
+      // Start second step — should NOT call requestWakeLock
       const step1 = doc.getElementById('step1');
-      step1.click(); // start (should NOT call requestWakeLock)
+      step1.click(); // start step 1
 
       expect(wakeLockCallCount).toBe(0);
 
       // Restore
       window.requestWakeLock = originalRequestWakeLock;
     });
+
+    test('requestWakeLock is re-acquired on visibility change when recipe selected but brew not started', () => {
+      const originalRequestWakeLock = window.requestWakeLock;
+      let wakeLockCallCount = 0;
+
+      // Select the recipe (triggers the initial wake lock request)
+      selectRow(250);
+
+      // Intercept further wake lock calls
+      window.requestWakeLock = () => {
+        wakeLockCallCount++;
+        return Promise.resolve(false);
+      };
+
+      // Simulate the page going to background and back (wake lock auto-released)
+      // by firing a visibilitychange event with visibilityState = 'visible'.
+      Object.defineProperty(doc, 'visibilityState', {
+        value: 'visible',
+        writable: true,
+        configurable: true,
+      });
+      doc.dispatchEvent(new window.Event('visibilitychange'));
+
+      // The handler should re-request the lock because a recipe is selected and
+      // the brew hasn't started yet (no step is in 'running' / 'completed' state).
+      expect(wakeLockCallCount).toBe(1);
+
+      // Restore
+      window.requestWakeLock = originalRequestWakeLock;
+    });
+
+    test('requestWakeLock is NOT re-acquired on visibility change after brew completes', () => {
+      const originalRequestWakeLock = window.requestWakeLock;
+      let wakeLockCallCount = 0;
+
+      selectRow(250);
+
+      // Complete all steps
+      for (let i = 0; i < 6; i++) {
+        const step = doc.getElementById('step' + i);
+        step.click(); // start
+        step.click(); // complete
+      }
+
+      // Intercept wake lock calls after brew completion
+      window.requestWakeLock = () => {
+        wakeLockCallCount++;
+        return Promise.resolve(false);
+      };
+
+      Object.defineProperty(doc, 'visibilityState', {
+        value: 'visible',
+        writable: true,
+        configurable: true,
+      });
+      doc.dispatchEvent(new window.Event('visibilitychange'));
+
+      // The handler should NOT re-request — the brew is done
+      expect(wakeLockCallCount).toBe(0);
+
+      // Restore
+      window.requestWakeLock = originalRequestWakeLock;
+    });
+
 
     test('releaseWakeLock is called when all steps complete', () => {
       const originalReleaseWakeLock = window.releaseWakeLock;
