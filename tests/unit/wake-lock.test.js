@@ -143,7 +143,8 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
       step0.click(); // running
       step0.click(); // complete (auto-starts step 1)
       // Steps 1–5 are auto-started; one click each to complete
-      for (let i = 1; i < 6; i++) {
+      const stepCount = doc.querySelectorAll('#stepsGrid .step').length;
+      for (let i = 1; i < stepCount; i++) {
         const step = doc.getElementById('step' + i);
         step.click(); // complete (already running)
       }
