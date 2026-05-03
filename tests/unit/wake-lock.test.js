@@ -350,8 +350,7 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
         releaseCalled = true;
         return Promise.resolve();
       };
-      window.setTimeout = (callback, delay) => {
-        void delay;
+      window.setTimeout = (callback, _delay) => {
         callback();
         return 0;
       };
