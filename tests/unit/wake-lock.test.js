@@ -6,11 +6,12 @@ const { JSDOM } = require('jsdom');
 const html = fs.readFileSync(path.resolve(__dirname, '../../index.html'), 'utf8');
 
 // Helper: create a fresh JSDOM instance with scripts executing
-function createDOM() {
+function createDOM(options = {}) {
   const dom = new JSDOM(html, {
     runScripts: 'dangerously',
     pretendToBeVisual: true,
     url: 'http://localhost',
+    ...options,
   });
   return dom;
 }
@@ -39,6 +40,10 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
 
     test('isBrewRunning function is defined', () => {
       expect(typeof window.isBrewRunning).toBe('function');
+    });
+
+    test('isBrewComplete function is defined', () => {
+      expect(typeof window.isBrewComplete).toBe('function');
     });
   });
 
@@ -129,6 +134,42 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
     });
   });
 
+  describe('isBrewComplete state detection', () => {
+    function selectRow(waterAmount) {
+      const rows = doc.querySelectorAll('#recipeTableBody tr');
+      const row = Array.from(rows).find(r => r.dataset.water === String(waterAmount));
+      row.click();
+      return row;
+    }
+
+    function completeBrew() {
+      const step0 = doc.getElementById('step0');
+      step0.click(); // countdown
+      step0.click(); // running
+      step0.click(); // completed (auto-starts step 1)
+      const stepCount = doc.querySelectorAll('#stepsGrid .step').length;
+      for (let i = 1; i < stepCount; i++) {
+        const step = doc.getElementById(`step${i}`);
+        step.click(); // complete (already running)
+      }
+    }
+
+    test('returns false when no recipe is selected', () => {
+      expect(window.isBrewComplete()).toBe(false);
+    });
+
+    test('returns false when recipe selected but no step started', () => {
+      selectRow(250);
+      expect(window.isBrewComplete()).toBe(false);
+    });
+
+    test('returns true when all steps are completed', () => {
+      selectRow(250);
+      completeBrew();
+      expect(window.isBrewComplete()).toBe(true);
+    });
+  });
+
   describe('Wake Lock integration with brew steps', () => {
     function selectRow(waterAmount) {
       const rows = doc.querySelectorAll('#recipeTableBody tr');
@@ -145,45 +186,78 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
       // Steps 1–5 are auto-started; one click each to complete
       const stepCount = doc.querySelectorAll('#stepsGrid .step').length;
       for (let i = 1; i < stepCount; i++) {
-        const step = doc.getElementById('step' + i);
+        const step = doc.getElementById(`step${i}`);
         step.click(); // complete (already running)
       }
     }
 
-    test('requestWakeLock is called when a recipe is selected', () => {
+    test('wake lock is requested when the app opens', async () => {
+      const mockWakeLockRequest = jest.fn(() => Promise.resolve({
+        addEventListener: jest.fn(),
+        release: jest.fn(),
+      }));
+      const domWithWakeLock = createDOM({
+        beforeParse(win) {
+          Object.defineProperty(win.navigator, 'wakeLock', {
+            value: { request: mockWakeLockRequest },
+            configurable: true,
+          });
+        },
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(mockWakeLockRequest).toHaveBeenCalledWith('screen');
+
+      domWithWakeLock.window.close();
+    });
+
+    test('requestWakeLock is NOT called when a recipe is selected', () => {
       const originalRequestWakeLock = window.requestWakeLock;
-      let wakeLockCalled = false;
+      let wakeLockCallCount = 0;
       window.requestWakeLock = () => {
-        wakeLockCalled = true;
+        wakeLockCallCount++;
         return Promise.resolve(false);
       };
 
-      selectRow(250); // selecting a recipe should keep the screen on
+      selectRow(250);
 
-      expect(wakeLockCalled).toBe(true);
+      expect(wakeLockCallCount).toBe(0);
 
       // Restore
       window.requestWakeLock = originalRequestWakeLock;
     });
 
-    test('requestWakeLock is called when step 0 starts (failsafe for preselected brew)', () => {
+    test('releaseWakeLock is NOT called when a recipe is selected', () => {
+      const originalReleaseWakeLock = window.releaseWakeLock;
+      let releaseCalled = false;
+      window.releaseWakeLock = () => {
+        releaseCalled = true;
+        return Promise.resolve();
+      };
+
+      selectRow(250);
+
+      expect(releaseCalled).toBe(false);
+
+      // Restore
+      window.releaseWakeLock = originalReleaseWakeLock;
+    });
+
+    test('requestWakeLock is NOT called when step 0 starts', () => {
       const originalRequestWakeLock = window.requestWakeLock;
       let wakeLockCallCount = 0;
 
-      // Select the recipe (triggers one wake lock request), then intercept
-      // further calls to count only those coming from step interactions.
       selectRow(250);
       window.requestWakeLock = () => {
         wakeLockCallCount++;
         return Promise.resolve(false);
       };
 
-      // Tapping step 0 should re-request the wake lock as a failsafe in case
-      // the lock was lost while the page was hidden before brewing started.
       const step0 = doc.getElementById('step0');
       step0.click(); // start step 0
 
-      expect(wakeLockCallCount).toBe(1);
+      expect(wakeLockCallCount).toBe(0);
 
       // Restore
       window.requestWakeLock = originalRequestWakeLock;
@@ -193,11 +267,9 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
       const originalRequestWakeLock = window.requestWakeLock;
       let wakeLockCallCount = 0;
 
-      // Select the recipe first (this itself triggers one wake lock request),
-      // then start step 0 (also calls requestWakeLock as a failsafe — see above).
       selectRow(250);
       const step0 = doc.getElementById('step0');
-      step0.click(); // start step 0 (calls requestWakeLock once)
+      step0.click(); // start step 0
       step0.click(); // skip countdown → running
 
       // Now reset the counter so we only measure calls from steps 1+.
@@ -215,14 +287,10 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
       window.requestWakeLock = originalRequestWakeLock;
     });
 
-    test('requestWakeLock is re-acquired on visibility change when recipe selected but brew not started', () => {
+    test('requestWakeLock is re-acquired on visibility change before brew completes', () => {
       const originalRequestWakeLock = window.requestWakeLock;
       let wakeLockCallCount = 0;
 
-      // Select the recipe (triggers the initial wake lock request)
-      selectRow(250);
-
-      // Intercept further wake lock calls
       window.requestWakeLock = () => {
         wakeLockCallCount++;
         return Promise.resolve(false);
@@ -237,8 +305,7 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
       });
       doc.dispatchEvent(new window.Event('visibilitychange'));
 
-      // The handler should re-request the lock because a recipe is selected and
-      // the brew hasn't started yet (no step is in 'running' / 'completed' state).
+      // The handler should re-request the lock because the brew is not done.
       expect(wakeLockCallCount).toBe(1);
 
       // Restore
@@ -276,10 +343,15 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
 
     test('releaseWakeLock is called when all steps complete', () => {
       const originalReleaseWakeLock = window.releaseWakeLock;
+      const originalSetTimeout = window.setTimeout;
       let releaseCalled = false;
       window.releaseWakeLock = () => {
         releaseCalled = true;
         return Promise.resolve();
+      };
+      window.setTimeout = (callback) => {
+        callback();
+        return 0;
       };
 
       selectRow(250);
@@ -290,6 +362,7 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
 
       // Restore
       window.releaseWakeLock = originalReleaseWakeLock;
+      window.setTimeout = originalSetTimeout;
     });
 
     test('releaseWakeLock is called when brew is reset', () => {
@@ -312,6 +385,27 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
 
       // Restore
       window.releaseWakeLock = originalReleaseWakeLock;
+    });
+
+    test('requestWakeLock is NOT called when brewing another one', () => {
+      const originalRequestWakeLock = window.requestWakeLock;
+      let wakeLockCallCount = 0;
+
+      selectRow(250);
+      completeBrew();
+
+      window.requestWakeLock = () => {
+        wakeLockCallCount++;
+        return Promise.resolve(false);
+      };
+
+      const btnBrewAgain = doc.getElementById('btnBrewAgain');
+      btnBrewAgain.click();
+
+      expect(wakeLockCallCount).toBe(0);
+
+      // Restore
+      window.requestWakeLock = originalRequestWakeLock;
     });
   });
 
