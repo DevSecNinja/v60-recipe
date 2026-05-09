@@ -2199,6 +2199,10 @@
     // Pending promise to serialize wake lock requests
     let wakeLockPending = null;
     let mediaWakeLock = null;
+    const MEDIA_WAKELOCK_COLOR_A = '#000000';
+    const MEDIA_WAKELOCK_COLOR_B = '#010101';
+    // Refresh every 30s: frequent enough for iOS to keep hidden media active, but low battery cost.
+    const MEDIA_WAKELOCK_REFRESH_INTERVAL_MS = 30000;
 
     async function requestMediaWakeLock() {
       if (mediaWakeLock !== null) {
@@ -2217,7 +2221,7 @@
       const drawFrame = () => {
         if (context) {
           drawToggle = !drawToggle;
-          context.fillStyle = drawToggle ? '#000000' : '#010101';
+          context.fillStyle = drawToggle ? MEDIA_WAKELOCK_COLOR_A : MEDIA_WAKELOCK_COLOR_B;
           context.fillRect(0, 0, 1, 1);
         }
       };
@@ -2239,8 +2243,7 @@
         pointerEvents: 'none',
       });
 
-      // Refresh every 30s: frequent enough for iOS to keep the hidden stream active, but low battery cost.
-      const drawTimer = setInterval(drawFrame, 30000);
+      const drawTimer = setInterval(drawFrame, MEDIA_WAKELOCK_REFRESH_INTERVAL_MS);
       mediaWakeLock = { video, stream, drawTimer };
       document.body.appendChild(video);
 
@@ -2342,7 +2345,7 @@
         stepStates.every(s => s === 'completed');
     }
 
-    // Re-acquire wake lock when the app becomes visible again during an active brew.
+    // Re-acquire only during active brews so off-gesture idle visibility events do not block the next user-tap request.
     document.addEventListener('visibilitychange', async () => {
       if (document.visibilityState === 'visible' &&
           isBrewRunning() &&
