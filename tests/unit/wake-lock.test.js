@@ -57,7 +57,16 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
     function mockMediaWakeLockSupport() {
       const stop = jest.fn();
       const stream = { getTracks: jest.fn(() => [{ stop }]) };
-      const fillContext = { fillStyle: '#000000', fillRect: jest.fn() };
+      let fillStyleValue = '#000000';
+      const fillContext = {
+        get fillStyle() {
+          return fillStyleValue;
+        },
+        set fillStyle(value) {
+          fillStyleValue = value;
+        },
+        fillRect: jest.fn(),
+      };
       window.HTMLCanvasElement.prototype.captureStream = jest.fn(() => stream);
       window.HTMLCanvasElement.prototype.getContext = jest.fn(() => fillContext);
       window.HTMLMediaElement.prototype.play = jest.fn(() => Promise.resolve());

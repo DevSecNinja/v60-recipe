@@ -2237,6 +2237,7 @@
         pointerEvents: 'none',
       });
 
+      // Refresh the canvas periodically so iOS keeps treating the hidden stream as active media.
       const drawTimer = setInterval(drawFrame, 30000);
       mediaWakeLock = { video, stream, drawTimer };
       document.body.appendChild(video);
