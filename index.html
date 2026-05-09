@@ -2213,9 +2213,11 @@
       canvas.width = 1;
       canvas.height = 1;
       const context = canvas.getContext('2d');
+      let drawToggle = false;
       const drawFrame = () => {
         if (context) {
-          context.fillStyle = context.fillStyle === '#000000' ? '#010101' : '#000000';
+          drawToggle = !drawToggle;
+          context.fillStyle = drawToggle ? '#000000' : '#010101';
           context.fillRect(0, 0, 1, 1);
         }
       };
@@ -2237,7 +2239,7 @@
         pointerEvents: 'none',
       });
 
-      // Refresh the canvas periodically so iOS keeps treating the hidden stream as active media.
+      // Refresh every 30s: frequent enough for iOS to keep the hidden stream active, but low battery cost.
       const drawTimer = setInterval(drawFrame, 30000);
       mediaWakeLock = { video, stream, drawTimer };
       document.body.appendChild(video);

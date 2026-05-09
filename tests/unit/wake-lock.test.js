@@ -48,6 +48,25 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
   });
 
   describe('Wake Lock API fallback handling', () => {
+    let originalCaptureStream;
+    let originalGetContext;
+    let originalPlay;
+    let originalPause;
+
+    beforeEach(() => {
+      originalCaptureStream = window.HTMLCanvasElement.prototype.captureStream;
+      originalGetContext = window.HTMLCanvasElement.prototype.getContext;
+      originalPlay = window.HTMLMediaElement.prototype.play;
+      originalPause = window.HTMLMediaElement.prototype.pause;
+    });
+
+    afterEach(() => {
+      window.HTMLCanvasElement.prototype.captureStream = originalCaptureStream;
+      window.HTMLCanvasElement.prototype.getContext = originalGetContext;
+      window.HTMLMediaElement.prototype.play = originalPlay;
+      window.HTMLMediaElement.prototype.pause = originalPause;
+    });
+
     test('requestWakeLock handles missing Wake Lock API gracefully', async () => {
       // jsdom doesn't support navigator.wakeLock, so this tests the fallback
       const result = await window.requestWakeLock();
