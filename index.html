@@ -2199,8 +2199,8 @@
     // Pending promise to serialize wake lock requests
     let wakeLockPending = null;
     let mediaWakeLock = null;
-    const MEDIA_WAKE_LOCK_COLOR_A = '#000000';
-    const MEDIA_WAKE_LOCK_COLOR_B = '#010101';
+    const MEDIA_WAKE_LOCK_COLOR_DARK = '#000000';
+    const MEDIA_WAKE_LOCK_COLOR_LIGHTER = '#010101';
     // Refresh every 30s: frequent enough for iOS to keep hidden media active, but low battery cost.
     const MEDIA_WAKE_LOCK_REFRESH_INTERVAL_MS = 30000;
 
@@ -2221,7 +2221,7 @@
       const drawFrame = () => {
         if (context) {
           drawToggle = !drawToggle;
-          context.fillStyle = drawToggle ? MEDIA_WAKE_LOCK_COLOR_A : MEDIA_WAKE_LOCK_COLOR_B;
+          context.fillStyle = drawToggle ? MEDIA_WAKE_LOCK_COLOR_DARK : MEDIA_WAKE_LOCK_COLOR_LIGHTER;
           context.fillRect(0, 0, 1, 1);
         }
       };
@@ -2232,7 +2232,6 @@
       video.muted = true;
       video.loop = true;
       video.playsInline = true;
-      video.setAttribute('playsinline', '');
       video.setAttribute('aria-hidden', 'true');
       video.srcObject = stream;
       Object.assign(video.style, {
