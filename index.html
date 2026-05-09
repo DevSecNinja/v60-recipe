@@ -2773,6 +2773,10 @@
       const state = stepStates[stepIndex];
 
       if (state === 'available') {
+        if (stepIndex === 0) {
+          requestWakeLock();
+        }
+
         // Request notification permission on first interaction (best practice for iOS)
         if (stepIndex === 0 && notificationPermission === 'default') {
           requestNotificationPermission();

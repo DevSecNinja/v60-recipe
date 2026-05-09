@@ -244,7 +244,7 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
       window.releaseWakeLock = originalReleaseWakeLock;
     });
 
-    test('requestWakeLock is NOT called when step 0 starts', () => {
+    test('requestWakeLock is called when step 0 starts (user gesture keeps iOS screen on)', () => {
       const originalRequestWakeLock = window.requestWakeLock;
       let wakeLockCallCount = 0;
 
@@ -257,7 +257,7 @@ describe('V60 Recipe Calculator — Wake Lock', () => {
       const step0 = doc.getElementById('step0');
       step0.click(); // start step 0
 
-      expect(wakeLockCallCount).toBe(0);
+      expect(wakeLockCallCount).toBe(1);
 
       // Restore
       window.requestWakeLock = originalRequestWakeLock;
