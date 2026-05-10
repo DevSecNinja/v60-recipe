@@ -2381,6 +2381,21 @@
       }
     });
 
+    // Acquire the wake lock on user interaction with the app, not just when
+    // the brew starts. iOS PWAs require a user gesture to grant the lock, so
+    // "from app open" is not possible without one — but the user typically
+    // taps/scrolls while preparing water, which is enough to keep the screen
+    // on for the whole brewing workflow. The handler is also re-armed by
+    // visibilitychange so the next tap after returning to the app re-acquires
+    // a lock that iOS released while we were backgrounded.
+    function requestWakeLockOnGesture() {
+      if (wakeLock === null) {
+        requestWakeLock();
+      }
+    }
+    document.addEventListener('pointerdown', requestWakeLockOnGesture, { passive: true });
+    document.addEventListener('keydown', requestWakeLockOnGesture);
+
     // --- Slider input handler ---
     function handleSliderInput() {
       const val = parseFloat(slider.value);
